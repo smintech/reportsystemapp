@@ -1,1 +1,206 @@
-hbh
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel | Ratel</title>
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --font-primary: "Inter", Arial, sans-serif;
+            --color-bg: #f1f5f9;
+            --color-header: #2563eb;
+            --color-header-text: #fff;
+            --color-card-bg: #ffffff;
+            --color-text: #1e293b;
+            --color-row-alt: #e0f2fe;
+            --color-btn-delete: #ef4444;
+            --color-btn-delete-hover: #dc2626;
+            --color-btn-toggle: #1d4ed8;
+            --color-btn-toggle-hover: #1b40c4;
+            --radius: 12px;
+            --padding: 20px;
+            --shadow: 0 8px 20px rgba(0,0,0,0.12);
+            --transition: 0.3s ease;
+            --font-weight-bold: 600;
+        }
+
+        /* ===== BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-primary);
+        }
+
+        body {
+            background: var(--color-bg);
+            color: var(--color-text);
+            padding: 0;
+        }
+
+        /* ===== DASHBOARD HEADER ===== */
+        .dashboard-header {
+            background: var(--color-header);
+            color: var(--color-header-text);
+            padding: 25px var(--padding);
+            font-size: 1.8rem;
+            font-weight: var(--font-weight-bold);
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* ===== FLASH MESSAGES ===== */
+        .flash-message {
+            margin: 15px var(--padding);
+            padding: 12px 15px;
+            border-radius: var(--radius);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .flash-error {
+            background: #fee2e2;
+            color: var(--color-btn-delete);
+        }
+
+        .flash-success {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        /* ===== TABLE CARD ===== */
+        .table-container {
+            margin: 30px var(--padding);
+            background: var(--color-card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 15px;
+        }
+
+        th {
+            background: var(--color-header);
+            color: var(--color-header-text);
+            padding: 15px;
+            text-align: left;
+            font-weight: var(--font-weight-bold);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) td {
+            background: var(--color-row-alt);
+        }
+
+        tr:hover td {
+            background: #dbeafe;
+            transition: var(--transition);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 8px 14px;
+            border-radius: var(--radius);
+            border: none;
+            color: #fff;
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .btn-delete {
+            background: var(--color-btn-delete);
+        }
+
+        .btn-delete:hover {
+            background: var(--color-btn-delete-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-toggle {
+            background: var(--color-btn-toggle);
+        }
+
+        .btn-toggle:hover {
+            background: var(--color-btn-toggle-hover);
+            transform: scale(1.05);
+        }
+
+        /* ===== DETAILS SECTION ===== */
+        .details {
+            display: none;
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 8px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        Admin Dashboard
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message {% if category=='error' %}flash-error{% else %}flash-success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Users Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.created_at }}</td>
+                    <td>
+                        <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-delete">Delete</button>
+                        </form>
+                        <button class="btn btn-toggle" onclick="toggleDetails({{ user.id }})">Show Details</button>
+                        <div id="details-{{ user.id }}" class="details">
+                            Password (hashed): {{ user.password_hash }}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function toggleDetails(id) {
+            const div = document.getElementById("details-" + id);
+            div.style.display = div.style.display === "none" ? "block" : "none";
+        }
+    </script>
+
+</body>
+</html>
