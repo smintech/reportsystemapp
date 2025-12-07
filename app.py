@@ -1,18 +1,17 @@
 from flask import Flask, render_template, g
 import sqlite3
 app = Flask(__name__)
-DATABASE = "database.db"
+DATABASE = os.path.join(os.path.dirname(__file__), "database.db")
 
 def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
-    return db
+    if "db" not in g:
+        g.db = sqlite3.connect(DATABASE)
+        g.db.row_factory = sqlite3.Row
+    return g.db
 
 @app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
+def close_db(exception):
+    db = g.pop("db", None)
     if db is not None:
         db.close()
 
