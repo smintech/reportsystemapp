@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>ClearSignal</title>
+</head>
+<body class="bodyparent">
+<div class="header">
+  <h class="roboto-font">Ratel Movement Report System</h>
+    <p class="roboto-jnr">report safe,report confidently</p>
+</div>
+<div id="moveup" class="moveup">
+    <textarea name="report" id="report" minlength="20" maxlength="1000" placeholder="Write Report..........."></textarea>
+    <p id="charcount">*0/1000</p>
+    <p id="error">Minimum 20 characters required.</p>
+    <button id="submitbtn">Submit</button>
+     <input type="file" id="fileinput" multiple>
 
+      <div id="container" class="preview-box">
+
+      </div>
+<div class="categorywrapper">
+    <div class="select-header">Select a Category</div>
+    <ul class="select-options">
+        <li class="category-group">
+            <span class="category-label">Government</span>
+            <ul class="options-group">
+                <li data-value="embezzlement">Embezzlement</li>
+                <li data-value="looting">Looting</li>
+                <li data-value="overbilling">Overbilling</li>
+                <li data-value="allocation">Allocation</li>
+                <li data-value="under-the-table-payment">Under the table payment</li>
+                <li data-value="ghostworkers">Ghostworkers</li>
+            </ul>
+        </li>
+        <li class="category-group">
+            <span class="category-label">Oil</span>
+            <ul class="options-group">
+                <li data-value="policy-twisting">Policy Twisting</li>
+                <li data-value="diverting-public-funds">Diverting Public Funds</li>
+                <li data-value="management-manipulation">Management Manipulation</li>
+                <li data-value="business-manipulation">Business Manipulation</li>
+            </ul>
+        </li>
+        <li class="category-group">
+            <span class="category-label">Elections</span>
+            <ul class="options-group">
+                <li data-value="vote-buying">Vote Buying</li>
+                <li data-value="forging">Forging</li>
+                <li data-value="coercion">Pressure</li>
+                <li data-value="influence">Influence</li>
+             </ul>
+        </li>
+          <li class="category-group">
+            <span class="category-label">Court</span>
+            <ul class="options-group">
+                <li data-value="bribery">Bribery</li>
+                <li data-value="pressure">Pressure</li>
+                <li data-value="delay">Delay</li>
+            </ul>
+        </li>
+          <li class="category-group">
+            <span class="category-label">School</span>
+            <ul class="options-group">
+                <li data-value="cheating">Cheating</li>
+                <li data-value="grading">Grading</li>
+                <li data-value="nepotism">Nepotism</li>
+            </ul>
+        </li>
+          <li class="category-group">
+            <span class="category-label">Business</span>
+            <ul class="options-group">
+                <li data-value="tax-evasion<">Tax Evasion</li>
+                <li data-value="fake-goods">Fake Goods</li>
+                <li data-value="scamming">Scamming</li>
+                <li data-value="conspiracy">Conspiracy</li>
+            </ul>
+        </li>
+        <li class="category-group">
+            <span class="category-label">Hospital</span>
+            <ul class="options-group">
+                <li data-value="bribery<">Bribery</li>
+                <li data-value="favoritism">Favoritism</li>
+                <li data-value="overbilling">Overbilling</li>
+                <li data-value="misuse-of-funds">Misuse Of Funds</li>
+                <li data-value="ghostworkers">GhostWorkers</li>
+                <li data-value="procurement-fraud">Procurement Fraud</li>
+                <li data-value="stealing-of-drugs">Stealing Of Drugs</li>
+                <li data-value="undispose-expired-drugs">Undispose Expired Drugs</li>
+                <li data-value="delay-of-service">Delay Of Service</li>
+                <li data-value="fake-records">Fake Records</li>
+            </ul>
+        </li>
+          <li class="category-group">
+            <span class="category-label">Common Man</span>
+            <ul class="options-group">
+                <li data-value="tipping">Tipping</li>
+                <li data-value="extortion">Extortion</li>
+                <li data-value="shortcut">Shortcut</li>
+                <li data-value="overbilling">Overbilling</li>
+                <li data-value="thankyou-payment">ThankYou Payment</li>
+                <li data-value="murder">Murder</li>
+                <li data-value="brutal-fight">Brutal Fight</li>
+                <li data-value="human-trafficking">Human Trafficking</li>
+            </ul>
+        </li>
+      <li class="category-group">
+            <span class="category-label">Others(Include in your form)</span>
+            <ul class="options-group"></ul>
+        </li>
+    </ul>
+</div>
+</div>
+<div class="footer">
+    <span id="about">About Page(learn more about the page)</span> |
+    <a href="#" id="feedback">Feedback</a>
+    <a href="https://nigeriarights.gov.ng/files/constitution.pdf" id="lawrule">What Does The Law Say?....
+    </a>
+    <p>©2025 ⿻MooreLink. All Rights Reserved.</p>
+<div id="about-section">
+    <h1>About And Purpose Of This Site</h1>
+    <h2>Ratel Anonymous Reporting Page</h2>
+
+    <p>This page is designed to allow you to report issues <strong>anonymously</strong> while protecting your identity.<br>
+    It is specially created for the <strong>Ratel Movement</strong>.<br>
+    All rights reserved to the creator.</p>
+
+    <p>When reporting anonymously, make sure you provide <strong>all evidence and a clear explanation</strong>.<br>
+    This allows the handler to investigate your case without needing to contact you.<br>
+    In some situations, your identity may be required, but since this platform is made for the Ratel Movement, 
+    you can be assured your information is handled safely.</p>
+
+    <p>All cases are managed by <strong>trusted Ratel leaders</strong> who ensure confidentiality and proper action.<br>
+    The best part of this site is if you are a witness to an incident, 
+    you can submit your report with your evidence, and the <strong>victim will be protected</strong>.</p>
+
+    <p>To make your report effective: <br>
+    - Be specific and factual. <br>
+    - Attach any supporting documents, images, or videos. <br>
+    - Avoid including personal identifiers if you want to remain anonymous. <br>
+    - Keep your language clear and professional to help the handler understand your report quickly.</p>
+
+    <p>Joining this platform allows you to: <br>
+    - Protect your identity while taking action. <br>
+    - Help the Ratel Movement address issues effectively. <br>
+    - Contribute to a safer and more transparent environment. <br>
+    - Be a responsible witness ensuring victims are protected.</p>
+</div>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
