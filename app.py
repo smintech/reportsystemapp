@@ -41,6 +41,13 @@ def add_user():
         return redirect(url_for("list_users"))
 
     return render_template("add_users.html")
+
+@app.route("/delete_user/<int:user_id>", methods=["POST"])
+def delete_user(user_id):
+    db = get_db()
+    db.execute("DELETE FROM user WHERE id = ?", (user_id,))
+    db.commit()
+    return redirect(url_for("list_users"))
     
 if __name__ == "__main__":
     app.run(debug=True)
