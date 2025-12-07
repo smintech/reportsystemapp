@@ -1,8 +1,7 @@
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request, redirect, url_for
 import sqlite3
 app = Flask(__name__)
-DATABASE = os.path.join(os.path.dirname(__file__), "database.db")
-
+DATABASE = "database.db"
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(DATABASE)
