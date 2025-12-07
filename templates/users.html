@@ -4,70 +4,136 @@
     <title>All Users</title>
 
     <style>
+        /* ===== VARIABLES / THEME ===== */
+        :root {
+            --font-primary: 'Poppins', 'Inter', Arial, sans-serif;
+            --color-bg: #f8fafc;
+            --color-text: #1e293b;
+            --color-header: #111827;
+            --color-table-header: #2563eb;
+            --color-table-header-text: #ffffff;
+            --color-table-row: #f1f5f9;
+            --color-table-row-hover: #e0f2fe;
+            --color-btn-delete: #ef4444;
+            --color-btn-delete-hover: #dc2626;
+            --color-btn-link: #2563eb;
+            --color-btn-link-hover: #1d4ed8;
+            --radius: 12px;
+            --shadow: 0 12px 30px rgba(0,0,0,0.12);
+            --padding: 30px;
+            --transition: 0.3s ease;
+            --font-weight-bold: 700;
+            --font-weight-extra-bold: 800;
+            --font-size-base: 16px;
+            --font-size-header: 2.5rem;
+        }
+
         /* ===== BASE ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Inter", Arial, sans-serif;
+            font-family: var(--font-primary);
         }
 
         body {
-            background: #f1f5f9;
-            padding: 40px;
-            color: #334155;
+            background: var(--color-bg);
+            padding: 50px;
+            color: var(--color-text);
         }
 
         h1 {
-            margin-bottom: 25px;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
+            font-size: var(--font-size-header);
+            font-weight: var(--font-weight-extra-bold);
+            margin-bottom: 30px;
+            color: var(--color-header);
         }
 
-        /* ===== TABLE WRAPPER ===== */
+        /* ===== TABLE CONTAINER ===== */
         .table-container {
             background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-radius: var(--radius);
+            padding: var(--padding);
+            box-shadow: var(--shadow);
             overflow-x: auto;
         }
 
         /* ===== TABLE ===== */
         table {
             width: 100%;
-            border-collapse: collapse;
-            font-size: 15px;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: var(--font-size-base);
         }
 
         th {
-            background: #2563eb;
-            color: white;
-            padding: 12px;
+            background: var(--color-table-header);
+            color: var(--color-table-header-text);
             text-align: left;
-            font-weight: 600;
+            padding: 15px;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-base);
         }
 
         td {
-            padding: 12px;
-            background: #f8fafc;
+            padding: 15px;
+            background: var(--color-table-row);
+            color: var(--color-text);
             border-bottom: 1px solid #e2e8f0;
         }
 
         tr:hover td {
-            background: #e0f2fe;
-            transition: 0.3s;
+            background: var(--color-table-row-hover);
+            transition: var(--transition);
         }
 
-        /* Last row remove border */
         tr:last-child td {
             border-bottom: none;
         }
+
+        /* ===== BUTTONS ===== */
+        .btn, .btn-link {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: var(--font-size-base);
+        }
+
+        .btn {
+            background: var(--color-btn-delete);
+            color: #fff;
+            border: none;
+        }
+
+        .btn:hover {
+            background: var(--color-btn-delete-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-link {
+            background: var(--color-btn-link);
+            color: #fff;
+        }
+
+        .btn-link:hover {
+            background: var(--color-btn-link-hover);
+            transform: scale(1.05);
+        }
+
+        /* ===== ADD BUTTON POSITION ===== */
+        .add-user {
+            margin-top: 20px;
+            display: inline-block;
+        }
+
     </style>
 </head>
-
 <body>
+
     <h1>Registered Users</h1>
 
     <div class="table-container">
@@ -77,18 +143,25 @@
                 <th>Email</th>
                 <th>Role</th>
                 <th>Created At</th>
+                <th>Actions</th>
             </tr>
-
             {% for user in users %}
             <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.role }}</td>
                 <td>{{ user.created_at }}</td>
+                <td>
+                    <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Delete this user?');">
+                        <button class="btn" type="submit">Delete</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </table>
     </div>
+
+    <a href="{{ url_for('add_user') }}" class="btn-link add-user">Add New User</a>
 
 </body>
 </html>
