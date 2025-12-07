@@ -43,4 +43,4 @@ def add_user():
     return render_template("add_users.html")
     
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
