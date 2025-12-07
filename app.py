@@ -34,21 +34,21 @@ def admin_login():
         if admin and admin["password_hash"] == password:
             session["admin_logged_in"] = True
             flash("Welcome, admin!")
-            return redirect(url_for("admin_panel"))
+            return redirect(url_for("admin"))
         else:
             flash("Invalid admin credentials!", "error")
 
     return render_template("admin_login.html")
     
-@app.route("/admin_panel")
-def admin_panel():
+@app.route("/admin")
+def admin():
     if not session.get("admin_logged_in"):
         flash("Please log in as admin first!", "error")
         return redirect(url_for("admin_login"))
 
     db = get_db()
     users = db.execute("SELECT * FROM user").fetchall()
-    return render_template("admin_panel.html", users=users)
+    return render_template("admin_dashboard.html", users=users)
     
 @app.route("/users")
 def list_users():
