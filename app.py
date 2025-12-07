@@ -1,6 +1,7 @@
-from flask import Flask, render_template, g, request, redirect, url_for
+from flask import Flask, render_template, g, request, redirect, url_for, session , flash
 import sqlite3
 app = Flask(__name__)
+app.secret_key = "supersecretkey"
 DATABASE = "database.db"
 def get_db():
     if "db" not in g:
@@ -17,6 +18,37 @@ def close_db(exception):
 @app.route("/")
 def home():
     return render_template("index.html")
+    
+app.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        db = get_db()
+        admin = db.execute(
+            "SELECT * FROM user WHERE email = ? AND role = 'admin'",
+            (email,)
+        ).fetchone()
+
+        if admin and admin["password_hash"] == password:
+            session["admin_logged_in"] = True
+            flash("Welcome, admin!")
+            return redirect(url_for("admin_panel"))
+        else:
+            flash("Invalid admin credentials!", "error")
+
+    return render_template("admin_login.html")
+    
+@app.route("/admin_panel")
+def admin_panel():
+    if not session.get("admin_logged_in"):
+        flash("Please log in as admin first!", "error")
+        return redirect(url_for("admin_login"))
+
+    db = get_db()
+    users = db.execute("SELECT * FROM user").fetchall()
+    return render_template("admin_panel.html", users=users)
     
 @app.route("/users")
 def list_users():
