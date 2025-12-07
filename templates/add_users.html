@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add User</title>
+
+    <style>
+        /* ========== BASE STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            padding: 40px;
+            color: #1e293b;
+        }
+
+        h1 {
+            margin-bottom: 25px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* ========== FORM CONTAINER ========== */
+        .form-box {
+            background: #ffffff;
+            width: 400px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #334155;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            outline: none;
+        }
+
+        /* ========== BUTTON ========== */
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Add New User</h1>
+
+    <div class="form-box">
+        <form method="POST">
+            <label>Email:</label>
+            <input type="email" name="email" required>
+
+            <label>Role:</label>
+            <input type="text" name="role" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" required>
+
+            <button type="submit">Add User</button>
+        </form>
+    </div>
+
+</body>
+</html>
