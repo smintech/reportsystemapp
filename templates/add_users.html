@@ -4,97 +4,127 @@
     <title>Add User</title>
 
     <style>
-        /* ========== BASE STYLES ========== */
+        /* ===== VARIABLES / THEME ===== */
+        :root {
+            --font-primary: "Inter", Arial, sans-serif;
+            --color-bg: #f1f5f9;
+            --color-text: #1e293b;
+            --color-label: #334155;
+            --color-card-bg: #ffffff;
+            --color-input-border: #cbd5e1;
+            --color-input-focus: #2563eb;
+            --color-btn-bg: #2563eb;
+            --color-btn-hover: #1d4ed8;
+            --radius: 12px;
+            --padding: 30px;
+            --font-size-base: 15px;
+            --font-size-header: 2rem;
+            --font-weight-bold: 600;
+            --font-weight-extra-bold: 700;
+            --shadow: 0 8px 20px rgba(0,0,0,0.08);
+            --transition: 0.3s ease;
+        }
+
+        /* ===== BASE ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Inter", Arial, sans-serif;
+            font-family: var(--font-primary);
         }
 
         body {
-            background: #f1f5f9;
-            padding: 40px;
-            color: #1e293b;
+            background: var(--color-bg);
+            color: var(--color-text);
+
+            /* Center card with flex */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         h1 {
+            font-size: var(--font-size-header);
+            font-weight: var(--font-weight-extra-bold);
             margin-bottom: 25px;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
+            color: var(--color-text);
+            text-align: center;
         }
 
-        /* ========== FORM CONTAINER ========== */
+        /* ===== FORM CONTAINER ===== */
         .form-box {
-            background: #ffffff;
+            background: var(--color-card-bg);
             width: 400px;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            padding: var(--padding);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
 
         label {
-            font-weight: 600;
+            font-weight: var(--font-weight-bold);
             margin-bottom: 6px;
             display: block;
-            color: #334155;
+            color: var(--color-label);
         }
 
         input {
             width: 100%;
             padding: 12px;
             margin-bottom: 18px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--color-input-border);
             border-radius: 8px;
-            font-size: 15px;
-            transition: border 0.3s ease, box-shadow 0.3s ease;
+            font-size: var(--font-size-base);
+            transition: border var(--transition), box-shadow var(--transition);
         }
 
         input:focus {
-            border-color: #2563eb;
+            border-color: var(--color-input-focus);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
             outline: none;
         }
 
-        /* ========== BUTTON ========== */
+        /* ===== BUTTON ===== */
         button {
             width: 100%;
             padding: 14px;
-            background: #2563eb;
+            background: var(--color-btn-bg);
             color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius);
             font-size: 16px;
-            font-weight: 600;
+            font-weight: var(--font-weight-bold);
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
+            transition: background var(--transition), transform var(--transition);
         }
 
         button:hover {
-            background: #1d4ed8;
+            background: var(--color-btn-hover);
             transform: scale(1.03);
         }
+
     </style>
 </head>
 
 <body>
 
-    <h1>Add New User</h1>
+    <div>
+        <h1>Add New User</h1>
 
-    <div class="form-box">
-        <form method="POST">
-            <label>Email:</label>
-            <input type="email" name="email" required>
+        <div class="form-box">
+            <form method="POST">
+                <label>Email:</label>
+                <input type="email" name="email" required>
 
-            <label>Role:</label>
-            <input type="text" name="role" required>
+                <label>Role:</label>
+                <input type="text" name="role" required>
 
-            <label>Password:</label>
-            <input type="password" name="password" required>
+                <label>Password:</label>
+                <input type="password" name="password" required>
 
-            <button type="submit">Add User</button>
-        </form>
+                <button type="submit">Add User</button>
+            </form>
+        </div>
     </div>
 
 </body>
