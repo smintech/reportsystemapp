@@ -1,1 +1,99 @@
-bxbx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --nigeria-green: #006940;
+            --nigeria-green-dark: #004d30;
+            --nigeria-green-light: #008751;
+            --white: #ffffff;
+            --off-white: #f8f9fa;
+            --light-gray: #e0e0e0;
+            --text-dark: #1a1a1a;
+            --text-gray: #333333;
+            --accent-gold: #c9a227;
+            --shadow: rgba(0, 105, 64, 0.15);
+            --shadow-dark: rgba(0, 0, 0, 0.25);
+            --radius: 12px;
+            --padding: 20px;
+            --font-primary: "Inter", Arial, sans-serif;
+            --transition: 0.3s ease;
+        }
+
+        /* ===== BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-primary);
+        }
+
+        body {
+            background: var(--off-white);
+            color: var(--text-dark);
+        }
+
+        /* ===== DASHBOARD HEADER ===== */
+        .dashboard-header {
+            width: 100%;
+            background: var(--nigeria-green);
+            color: var(--white);
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px var(--shadow-dark);
+            min-height: 120px;
+        }
+
+        .dashboard-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            padding: 12px 22px;
+            background: var(--accent-gold);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            transition: background var(--transition), transform var(--transition);
+        }
+
+        .btn-logout:hover {
+            background: #b5931f; /* slightly darker gold */
+            transform: scale(1.05);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .dashboard-content {
+            padding: 30px 40px;
+        }
+
+        .dashboard-content p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- FULL-WIDTH DASHBOARD HEADER -->
+    <div class="dashboard-header">
+        <h2>Welcome, {{ staff_email }}</h2>
+        <a href="{{ url_for('staff_logout') }}" class="btn-logout">Logout</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="dashboard-content">
+        <p>Role: {{ staff_role }}</p>
+        <!-- You can add more dashboard widgets here -->
+    </div>
+
+</body>
+</html>
