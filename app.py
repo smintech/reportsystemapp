@@ -11,10 +11,10 @@ from psycopg2 import IntegrityError
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
-RATEL_DB_URL = os.getenv("RATEL_DB_URL")
+RATEL_DB_URL = os.getenv("DATABASE_URL")
 def get_db():
     if "db" not in g:
-        g.db = psycopg2.connect(RATEL_DB_URL, sslmode="require")
+        g.db = psycopg2.connect(DATABASE_URL, sslmode="require")
     return g.db
 
 @app.teardown_appcontext
