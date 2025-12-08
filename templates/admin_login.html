@@ -17,6 +17,7 @@
             --color-btn-hover: #1d4ed8;
             --color-flash-error: #ef4444;
             --color-flash-success: #16a34a;
+            --color-checkbox: #2563eb;
             --radius: 12px;
             --padding: 30px;
             --font-size-base: 15px;
@@ -86,7 +87,8 @@
             color: var(--color-label);
         }
 
-        input {
+        input[type="email"],
+        input[type="password"] {
             width: 100%;
             padding: 12px;
             margin-bottom: 18px;
@@ -102,6 +104,29 @@
             outline: none;
         }
 
+        /* ===== REMEMBER ME ===== */
+        .remember-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .remember-wrapper input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--color-checkbox);
+            cursor: pointer;
+        }
+
+        .remember-wrapper span {
+            font-weight: var(--font-weight-bold);
+            color: var(--color-label);
+            cursor: pointer;
+        }
+
+        /* ===== BUTTON ===== */
         button {
             width: 100%;
             padding: 14px;
@@ -153,13 +178,21 @@
         {% endwith %}
 
         <form method="POST">
+
             <label>Email:</label>
             <input type="email" name="email" required>
 
             <label>Password:</label>
             <input type="password" name="password" required>
 
+            <!-- REMEMBER ME ADDED -->
+            <label class="remember-wrapper">
+                <input type="checkbox" name="remember">
+                <span>Remember me</span>
+            </label>
+
             <button type="submit">Login</button>
+
         </form>
 
         <a href="{{ url_for('home') }}" class="back-link">Back to Home</a>
