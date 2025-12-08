@@ -122,18 +122,21 @@ def add_user():
     if request.method == "POST":
         email = request.form["email"]
         role = request.form["role"]
-        password = request.form["password"]  # (plain text for now)
+        password = request.form["password"]
 
         db = get_db()
         hashed_password = generate_password_hash(password)
-        db.execute(
-            "INSERT INTO user (email, password_hash, role, created_at) VALUES (?, ?, ?, datetime('now'))",
-            (email, hashed_password, role)
-        )
-        db.commit()
-        flash("User added successfully!", "success")
+        try:
+            db.execute(
+                "INSERT INTO user (email, password_hash, role) VALUES (?, ?, ?)",
+                (email, hashed_password, role)
+            )
+            db.commit()
+            flash("User added successfully!", "success")
+        except sqlite3.IntegrityError:
+            flash("User with this email already exists!", "error")
         return redirect(url_for("admin_dashboard"))
-        
+
     return render_template("add_users.html")
 
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
@@ -156,4 +159,5 @@ def admin_logout():
     return redirect(url_for("admin_login"))
     
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
