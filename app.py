@@ -7,7 +7,7 @@ from datetime import timedelta
 import secrets
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
-app.permanent_session_lifetime = timedelta(days=30)
+app.permanent_session_lifetime = timedelta(days=1)
 DATABASE = "database.db"
 def get_db():
     if "db" not in g:
