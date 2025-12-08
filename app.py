@@ -20,6 +20,11 @@ def close_db(exception):
 def home():
     return render_template("index.html")
     
+@app.route("/test_db")
+def test_db():
+    import os
+    return str(os.path.abspath("database.db"))
+    
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
