@@ -21,6 +21,27 @@ def close_db(exception):
     db = g.pop("db", None)
     if db is not None:
         db.close()
+        
+def init_db():
+    """Initialize database and default admin"""
+    db = sqlite3.connect(DATABASE)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS user (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+admin_email = "admin@ratel.com"
+    admin_password_hash = generate_password_hash("admin7070")
+    exists = db.execute("SELECT * FROM user WHERE email = ?", (admin_email,)).fetchone()
+    if not exists:
+        db.execute("INSERT INTO user (email, password_hash, role) VALUES (?, ?, ?)",
+                   (admin_email, admin_password_hash, "admin"))
+    db.commit()
+    db.close()
 
 @app.route("/")
 def home():
