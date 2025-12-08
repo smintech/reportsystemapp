@@ -1,193 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Ratel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Ratel</title>
 
-    <style>
-        /* ====== VARIABLES ====== */
-        :root {
-            --font-primary: "Inter", Arial, sans-serif;
+<style>
+    /* ====== VARIABLES ====== */
+    :root {
+        --font-primary: "Inter", Arial, sans-serif;
 
-            --color-bg: #f1f5f9;
-            --color-text: #1e293b;
-            --color-header: #2563eb;
-            --color-header-text: #ffffff;
+        --color-bg: #f1f5f9;
+        --color-text: #1e293b;
+        --color-header: #2563eb;
+        --color-header-text: #ffffff;
 
-            --color-card-bg: #ffffff;
-            --color-row-alt: #e0f2fe;
+        --color-card-bg: #ffffff;
+        --color-row-alt: #e0f2fe;
 
-            --color-btn-primary: #2563eb;
-            --color-btn-primary-hover: #1d4ed8;
+        --color-btn-primary: #2563eb;
+        --color-btn-primary-hover: #1d4ed8;
 
-            --color-btn-logout: #334155;
-            --color-btn-logout-hover: #0f172a;
+        --color-btn-logout: #334155;
+        --color-btn-logout-hover: #0f172a;
 
-            --color-btn-delete: #ef4444;
-            --color-btn-delete-hover: #dc2626;
+        --color-btn-delete: #ef4444;
+        --color-btn-delete-hover: #dc2626;
 
-            --color-btn-toggle: #1d4ed8;
-            --color-btn-toggle-hover: #1b40c4;
+        --color-btn-toggle: #1d4ed8;
+        --color-btn-toggle-hover: #1b40c4;
 
-            --radius: 12px;
-            --shadow: 0 8px 20px rgba(0,0,0,0.12);
-            --transition: 0.3s ease;
-        }
+        --radius: 12px;
+        --shadow: 0 8px 20px rgba(0,0,0,0.12);
+        --transition: 0.3s ease;
+    }
 
-        /* ===== BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font-primary);
-        }
+    /* ===== BASE ===== */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: var(--font-primary);
+    }
 
-        body {
-            background: var(--color-bg);
-            color: var(--color-text);
-        }
+    body {
+        background: var(--color-bg);
+        color: var(--color-text);
+    }
 
-        /* ===== HEADER ===== */
-        .dashboard-header {
-            background: var(--color-header);
-            color: var(--color-header-text);
-            padding: 23px 30px;
-            font-size: 1.8rem;
-            font-weight: 700;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
+    /* ===== HEADER ===== */
+    .dashboard-header {
+        background: var(--color-header);
+        color: var(--color-header-text);
+        padding: 23px 30px;
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        box-shadow: var(--shadow);
+    }
 
-        /* ===== BUTTONS ===== */
-        .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: var(--radius);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            color: #fff;
-            cursor: pointer;
-        }
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        color: #fff;
+        cursor: pointer;
+    }
 
-        .btn-primary {
-            background: var(--color-btn-primary);
-        }
+    .btn-primary {
+        background: var(--color-btn-primary);
+    }
 
-        .btn-primary:hover {
-            background: var(--color-btn-primary-hover);
-            transform: scale(1.03);
-        }
+    .btn-primary:hover {
+        background: var(--color-btn-primary-hover);
+        transform: scale(1.03);
+    }
 
-        .btn-logout {
-            background: var(--color-btn-logout);
-        }
+    .btn-logout {
+        background: var(--color-btn-logout);
+    }
 
-        .btn-logout:hover {
-            background: var(--color-btn-logout-hover);
-            transform: scale(1.03);
-        }
+    .btn-logout:hover {
+        background: var(--color-btn-logout-hover);
+        transform: scale(1.03);
+    }
 
-        .btn-delete {
-            background: var(--color-btn-delete);
-            border: none;
-        }
+    .btn-delete {
+        background: var(--color-btn-delete);
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
 
-        .btn-delete:hover {
-            background: var(--color-btn-delete-hover);
-            transform: scale(1.05);
-        }
+    .btn-delete:hover {
+        background: var(--color-btn-delete-hover);
+        transform: scale(1.05);
+    }
 
-        .btn-toggle {
-            background: var(--color-btn-toggle);
-            border: none;
-        }
+    .btn-toggle {
+        background: var(--color-btn-toggle);
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
 
-        .btn-toggle:hover {
-            background: var(--color-btn-toggle-hover);
-            transform: scale(1.05);
-        }
+    .btn-toggle:hover {
+        background: var(--color-btn-toggle-hover);
+        transform: scale(1.05);
+    }
 
-        /* ===== TOP NAV BAR ===== */
-        .top-actions {
-            padding: 30px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+    /* ===== TOP NAV BAR ===== */
+    .top-actions {
+        padding: 20px 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
 
-        /* ===== FLASH MESSAGES ===== */
-        .flash-messages {
-            margin: 10px 30px;
-            list-style: none;
-        }
+    /* ===== FLASH MESSAGES ===== */
+    .flash-messages {
+        margin: 10px 30px;
+        list-style: none;
+    }
 
-        .flash-messages li {
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            border-radius: var(--radius);
-            font-weight: 600;
-        }
+    .flash-messages li {
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        border-radius: var(--radius);
+        font-weight: 600;
+    }
 
-        .success { background: #dcfce7; color: #16a34a; }
-        .error { background: #fee2e2; color: #dc2626; }
+    .success { background: #dcfce7; color: #16a34a; }
+    .error { background: #fee2e2; color: #dc2626; }
 
-        /* ===== CARD ===== */
-        .card {
-            background: var(--color-card-bg);
-            margin: 30px;
-            padding: 25px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
+    /* ===== CARD ===== */
+    .card {
+        background: var(--color-card-bg);
+        margin: 20px 30px;
+        padding: 25px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+    }
 
-        .card h2 {
-            margin-bottom: 18px;
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
+    .card h2 {
+        margin-bottom: 18px;
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
 
-        /* ===== TABLE ===== */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 15px;
-        }
+    /* ===== TABLE ===== */
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+        min-width: 700px;
+    }
 
-        th {
-            background: var(--color-header);
-            color: white;
-            padding: 14px;
-            text-align: left;
-        }
+    .user-table th,
+    .user-table td {
+        padding: 14px;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+    }
 
-        td {
-            padding: 14px;
-            border-bottom: 1px solid #e2e8f0;
-        }
+    .user-table th {
+        background: var(--color-header);
+        color: var(--color-header-text);
+    }
 
-        tr:nth-child(even) td {
-            background: var(--color-row-alt);
-        }
+    .user-table tr:nth-child(even) td {
+        background: var(--color-row-alt);
+    }
 
-        tr:hover td {
-            background: #dbeafe;
-            transition: var(--transition);
-        }
+    .user-table tr:hover td {
+        background: #dbeafe;
+        transition: var(--transition);
+    }
 
-        /* ===== DETAILS (Show/Hide Section) ===== */
-        .details {
-            display: none;
-            margin-top: 6px;
-            font-size: 0.9rem;
-            padding: 8px 10px;
-            background: #f1f5f9;
-            border-radius: 8px;
-        }
+    /* ===== DETAILS (Show/Hide Section) ===== */
+    .details {
+        display: none;
+        margin-top: 6px;
+        font-size: 0.9rem;
+        padding: 8px 10px;
+        background: #f1f5f9;
+        border-radius: 8px;
+    }
 
-    </style>
-
+</style>
 </head>
 <body>
 
@@ -219,49 +223,50 @@
     <div class="card">
         <h2>Users Preview</h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+        <div style="overflow-x:auto;">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.role }}</td>
-                    <td>{{ user.created_at }}</td>
-                    <td>
-                        <!-- DELETE BUTTON -->
-                        <form action="{{ url_for('delete_user', user_id=user.id) }}" 
-                              method="POST" 
-                              style="display:inline;">
-                            <button type="submit" class="btn-delete"
-                            onclick="return confirm('Delete user {{ user.email }}?');">
-                                Delete
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ user.created_at }}</td>
+                        <td>
+                            <!-- DELETE BUTTON -->
+                            <form action="{{ url_for('delete_user', user_id=user.id) }}" 
+                                  method="POST" 
+                                  style="display:inline;">
+                                <button type="submit" class="btn-delete"
+                                onclick="return confirm('Delete user {{ user.email }}?');">
+                                    Delete
+                                </button>
+                            </form>
+
+                            <!-- SHOW DETAILS BUTTON -->
+                            <button class="btn-toggle" onclick="toggleDetails({{ user.id }})">
+                                Show Details
                             </button>
-                        </form>
 
-                        <!-- SHOW DETAILS BUTTON -->
-                        <button class="btn-toggle" onclick="toggleDetails({{ user.id }})">
-                            Show Details
-                        </button>
-
-                        <!-- DETAILS BOX -->
-                        <div id="details-{{ user.id }}" class="details">
-                            <strong>Password (hashed):</strong><br>
-                            {{ user.password_hash }}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-
-        </table>
+                            <!-- DETAILS BOX -->
+                            <div id="details-{{ user.id }}" class="details">
+                                <strong>Password (hashed):</strong><br>
+                                {{ user.password_hash }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- JAVASCRIPT TO TOGGLE DETAILS -->
