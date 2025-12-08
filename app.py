@@ -3,9 +3,9 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
-app.permanent_session_lifetime = timedelta(days=30)
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
+app.permanent_session_lifetime = timedelta(days=30)
 DATABASE = "database.db"
 def get_db():
     if "db" not in g:
@@ -29,10 +29,6 @@ def adminonly(f):
         if not session.get("admin_logged_in"):
             flash("You must log in as admin first!", "error")
             return redirect(url_for("admin_login"))
-        # Optional: Only allow access if coming from admin dashboard
-        if request.referrer is None or "/admin" not in request.referrer:
-            flash("You can only access this page from the admin dashboard!", "error")
-            return redirect(url_for("admin_dashboard"))
         return f(*args, **kwargs)
     return decorated_function
     
@@ -54,7 +50,7 @@ def admin_login():
                 session.permanent = True
             else:
                 session.permanent = False
-            session["admin_logged_in_"] = True
+            session["admin_logged_in"] = True
             flash("Welcome, admin!", "success")
             return redirect(url_for("admin_dashboard"))
         else:
@@ -64,7 +60,7 @@ def admin_login():
     
 @app.route("/admin")
 def admin_dashboard():
-    if not session.get("admin_logged_in_"):
+    if not session.get("admin_logged_in"):
         flash("Please log in as admin first!", "error")
         return redirect(url_for("admin_login"))
 
@@ -102,7 +98,7 @@ def add_user():
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
 @adminonly
 def delete_user(user_id):
-    if not session.get("admin_logged_in_"):
+    if not session.get("admin_logged_in"):
         flash("Please log in first.", "error")
         return redirect(url_for("admin_login"))
 
@@ -114,7 +110,7 @@ def delete_user(user_id):
     
 @app.route("/admin_logout")
 def admin_logout():
-    session.pop("admin_logged_in_", None)
+    session.pop("admin_logged_in", None)
     flash("Logged out successfully.", "success")
     return redirect(url_for("admin_login"))
     
