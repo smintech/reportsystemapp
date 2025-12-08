@@ -81,7 +81,7 @@ def admin_login():
 
         db = get_db()
         cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        
+
         cur.execute(
             "SELECT * FROM users WHERE email=%s AND role='admin'",
             (email,)
@@ -89,13 +89,15 @@ def admin_login():
         admin = cur.fetchone()
 
         if admin and check_password_hash(admin["password_hash"], password):
-            if remember:
-                session.permanent = True
-            else:
-                session.permanent = False
+
             session["admin_logged_in"] = True
+            session["dashboard_token"] = secrets.token_hex(16)
+
+            session.permanent = True if remember else False
+
             flash("Welcome, admin!", "success")
             return redirect(url_for("admin_dashboard"))
+
         else:
             flash("Invalid admin credentials!", "error")
 
