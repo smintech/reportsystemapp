@@ -2,26 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel | Ratel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Ratel</title>
+
     <style>
-        /* ===== VARIABLES ===== */
+        /* ====== VARIABLES ====== */
         :root {
             --font-primary: "Inter", Arial, sans-serif;
+
             --color-bg: #f1f5f9;
-            --color-header: #2563eb;
-            --color-header-text: #fff;
-            --color-card-bg: #ffffff;
             --color-text: #1e293b;
+            --color-header: #2563eb;
+            --color-header-text: #ffffff;
+
+            --color-card-bg: #ffffff;
             --color-row-alt: #e0f2fe;
+
+            --color-btn-primary: #2563eb;
+            --color-btn-primary-hover: #1d4ed8;
+
+            --color-btn-logout: #334155;
+            --color-btn-logout-hover: #0f172a;
+
             --color-btn-delete: #ef4444;
             --color-btn-delete-hover: #dc2626;
+
             --color-btn-toggle: #1d4ed8;
             --color-btn-toggle-hover: #1b40c4;
+
             --radius: 12px;
-            --padding: 20px;
             --shadow: 0 8px 20px rgba(0,0,0,0.12);
             --transition: 0.3s ease;
-            --font-weight-bold: 600;
         }
 
         /* ===== BASE ===== */
@@ -35,64 +46,124 @@
         body {
             background: var(--color-bg);
             color: var(--color-text);
-            padding: 0;
         }
 
-        /* ===== DASHBOARD HEADER ===== */
+        /* ===== HEADER ===== */
         .dashboard-header {
             background: var(--color-header);
             color: var(--color-header-text);
-            padding: 25px var(--padding);
+            padding: 23px 30px;
             font-size: 1.8rem;
-            font-weight: var(--font-weight-bold);
+            font-weight: 700;
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--color-btn-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-btn-primary-hover);
+            transform: scale(1.03);
+        }
+
+        .btn-logout {
+            background: var(--color-btn-logout);
+        }
+
+        .btn-logout:hover {
+            background: var(--color-btn-logout-hover);
+            transform: scale(1.03);
+        }
+
+        .btn-delete {
+            background: var(--color-btn-delete);
+            border: none;
+        }
+
+        .btn-delete:hover {
+            background: var(--color-btn-delete-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-toggle {
+            background: var(--color-btn-toggle);
+            border: none;
+        }
+
+        .btn-toggle:hover {
+            background: var(--color-btn-toggle-hover);
+            transform: scale(1.05);
+        }
+
+        /* ===== TOP NAV BAR ===== */
+        .top-actions {
+            padding: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         /* ===== FLASH MESSAGES ===== */
-        .flash-message {
-            margin: 15px var(--padding);
+        .flash-messages {
+            margin: 10px 30px;
+            list-style: none;
+        }
+
+        .flash-messages li {
             padding: 12px 15px;
+            margin-bottom: 10px;
             border-radius: var(--radius);
-            font-weight: var(--font-weight-bold);
+            font-weight: 600;
         }
 
-        .flash-error {
-            background: #fee2e2;
-            color: var(--color-btn-delete);
-        }
+        .success { background: #dcfce7; color: #16a34a; }
+        .error { background: #fee2e2; color: #dc2626; }
 
-        .flash-success {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        /* ===== TABLE CARD ===== */
-        .table-container {
-            margin: 30px var(--padding);
+        /* ===== CARD ===== */
+        .card {
             background: var(--color-card-bg);
+            margin: 30px;
+            padding: 25px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            overflow-x: auto;
         }
 
+        .card h2 {
+            margin-bottom: 18px;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        /* ===== TABLE ===== */
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             font-size: 15px;
         }
 
         th {
             background: var(--color-header);
-            color: var(--color-header-text);
-            padding: 15px;
+            color: white;
+            padding: 14px;
             text-align: left;
-            font-weight: var(--font-weight-bold);
         }
 
         td {
-            padding: 15px;
+            padding: 14px;
             border-bottom: 1px solid #e2e8f0;
         }
 
@@ -105,66 +176,49 @@
             transition: var(--transition);
         }
 
-        /* ===== BUTTONS ===== */
-        .btn {
-            padding: 8px 14px;
-            border-radius: var(--radius);
-            border: none;
-            color: #fff;
-            font-weight: var(--font-weight-bold);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-        }
-
-        .btn-delete {
-            background: var(--color-btn-delete);
-        }
-
-        .btn-delete:hover {
-            background: var(--color-btn-delete-hover);
-            transform: scale(1.05);
-        }
-
-        .btn-toggle {
-            background: var(--color-btn-toggle);
-        }
-
-        .btn-toggle:hover {
-            background: var(--color-btn-toggle-hover);
-            transform: scale(1.05);
-        }
-
-        /* ===== DETAILS SECTION ===== */
+        /* ===== DETAILS (Show/Hide Section) ===== */
         .details {
             display: none;
+            margin-top: 6px;
             font-size: 0.9rem;
-            color: #555;
-            margin-top: 8px;
+            padding: 8px 10px;
+            background: #f1f5f9;
+            border-radius: 8px;
         }
 
     </style>
+
 </head>
 <body>
 
-    <!-- Dashboard Header -->
+    <!-- HEADER -->
     <div class="dashboard-header">
         Admin Dashboard
     </div>
 
-    <!-- Flash Messages -->
+    <!-- NAV -->
+    <div class="top-actions">
+        <span class="btn btn-primary">Welcome, Admin!</span>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-logout">Logout</a>
+        <a href="{{ url_for('list_users') }}" class="btn btn-primary">View Users</a>
+        <a href="{{ url_for('add_user') }}" class="btn btn-primary">Add New User</a>
+    </div>
+
+    <!-- FLASH MESSAGES -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash-message {% if category=='error' %}flash-error{% else %}flash-success{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
+        <ul class="flash-messages">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
       {% endif %}
     {% endwith %}
 
-    <!-- Users Table -->
-    <div class="table-container">
+    <!-- USERS PREVIEW CARD -->
+    <div class="card">
+        <h2>Users Preview</h2>
+
         <table>
             <thead>
                 <tr>
@@ -174,6 +228,7 @@
                     <th>Actions</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for user in users %}
                 <tr>
@@ -181,24 +236,39 @@
                     <td>{{ user.role }}</td>
                     <td>{{ user.created_at }}</td>
                     <td>
-                        <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-delete">Delete</button>
+                        <!-- DELETE BUTTON -->
+                        <form action="{{ url_for('delete_user', user_id=user.id) }}" 
+                              method="POST" 
+                              style="display:inline;">
+                            <button type="submit" class="btn-delete"
+                            onclick="return confirm('Delete user {{ user.email }}?');">
+                                Delete
+                            </button>
                         </form>
-                        <button class="btn btn-toggle" onclick="toggleDetails({{ user.id }})">Show Details</button>
+
+                        <!-- SHOW DETAILS BUTTON -->
+                        <button class="btn-toggle" onclick="toggleDetails({{ user.id }})">
+                            Show Details
+                        </button>
+
+                        <!-- DETAILS BOX -->
                         <div id="details-{{ user.id }}" class="details">
-                            Password (hashed): {{ user.password_hash }}
+                            <strong>Password (hashed):</strong><br>
+                            {{ user.password_hash }}
                         </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
+
         </table>
     </div>
 
+    <!-- JAVASCRIPT TO TOGGLE DETAILS -->
     <script>
         function toggleDetails(id) {
-            const div = document.getElementById("details-" + id);
-            div.style.display = div.style.display === "none" ? "block" : "none";
+            const box = document.getElementById("details-" + id);
+            box.style.display = box.style.display === "none" ? "block" : "none";
         }
     </script>
 
