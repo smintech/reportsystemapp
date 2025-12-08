@@ -25,7 +25,7 @@ def close_db(exception):
 def init_db():
     """Initialize database and default admin"""
     db = get_db()
-    cur = db.cursor(
+    cur = db.cursor()
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
