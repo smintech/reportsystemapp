@@ -1,6 +1,9 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session , flash
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+from datetime import timedelta
+app.permanent_session_lifetime = timedelta(days=30)
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 DATABASE = "database.db"
@@ -20,16 +23,25 @@ def close_db(exception):
 def home():
     return render_template("index.html")
     
-@app.route("/test_db")
-def test_db():
-    import os
-    return str(os.path.abspath("database.db"))
+def adminonly(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            flash("You must log in as admin first!", "error")
+            return redirect(url_for("admin_login"))
+        # Optional: Only allow access if coming from admin dashboard
+        if request.referrer is None or "/admin" not in request.referrer:
+            flash("You can only access this page from the admin dashboard!", "error")
+            return redirect(url_for("admin_dashboard"))
+        return f(*args, **kwargs)
+    return decorated_function
     
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
+        remember = "remember" in request.form
 
         db = get_db()
         admin = db.execute(
@@ -38,6 +50,10 @@ def admin_login():
         ).fetchone()
 
         if admin and check_password_hash(admin["password_hash"], password):
+            if remember:
+                session.permanent = True
+            else:
+                session.permanent = False
             session["admin_logged_in_"] = True
             flash("Welcome, admin!", "success")
             return redirect(url_for("admin_dashboard"))
@@ -57,12 +73,14 @@ def admin_dashboard():
     return render_template("admin_dashboard.html", users=users)
     
 @app.route("/users")
+@adminonly
 def list_users():
     db = get_db()
     users = db.execute("SELECT * FROM user").fetchall()
     return render_template("users.html", users=users)
     
 @app.route("/add_user", methods=["GET", "POST"])
+@adminonly
 def add_user():
     if request.method == "POST":
         email = request.form["email"]
@@ -82,6 +100,7 @@ def add_user():
     return render_template("add_users.html")
 
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
+@adminonly
 def delete_user(user_id):
     if not session.get("admin_logged_in_"):
         flash("Please log in first.", "error")
