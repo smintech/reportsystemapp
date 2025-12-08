@@ -20,7 +20,7 @@ def close_db(exception):
 def home():
     return render_template("index.html")
     
-app.route("/admin_login", methods=["GET", "POST"])
+@app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
         email = request.form["email"]
@@ -57,7 +57,7 @@ def list_users():
     users = db.execute("SELECT * FROM user").fetchall()
     return render_template("users.html", users=users)
     
-@app.route("/add_users", methods=["GET", "POST"])
+@app.route("/add_user", methods=["GET", "POST"])
 def add_user():
     if request.method == "POST":
         email = request.form["email"]
@@ -74,7 +74,7 @@ def add_user():
         flash("User added successfully!", "success")
         return redirect(url_for("admin_dashboard"))
         
-    return redirect(url_for("add_users"))
+    return redirect(url_for("add_users.html"))
 
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
 def delete_user(user_id):
