@@ -34,6 +34,7 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
+db = sqlite3.connect(DATABASE)
 admin_email = "admin@ratel.com"
 admin_password_hash = generate_password_hash("admin7070")
 exists = db.execute("SELECT * FROM user WHERE email = ?", (admin_email,)).fetchone()
