@@ -1,1 +1,176 @@
-hbd
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Login</title>
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --nigeria-green: #006940;
+            --nigeria-green-dark: #004d30;
+            --nigeria-green-light: #008751;
+            --white: #ffffff;
+            --off-white: #f8f9fa;
+            --light-gray: #e0e0e0;
+            --text-dark: #1a1a1a;
+            --text-gray: #333333;
+            --accent-gold: #c9a227;
+            --shadow: rgba(0, 105, 64, 0.15);
+            --shadow-dark: rgba(0, 0, 0, 0.25);
+            --radius: 12px;
+            --padding: 25px;
+            --font-primary: "Inter", Arial, sans-serif;
+            --transition: 0.3s ease;
+        }
+
+        /* ===== BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-primary);
+        }
+
+        body {
+            background: var(--off-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: var(--text-dark);
+        }
+
+        /* ===== LOGIN CARD ===== */
+        .login-card {
+            background: var(--white);
+            padding: var(--padding);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 20px var(--shadow);
+            width: 380px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: var(--nigeria-green-dark);
+        }
+
+        /* ===== FORM ===== */
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-gray);
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius);
+            font-size: 15px;
+            transition: border var(--transition), box-shadow var(--transition);
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--nigeria-green);
+            box-shadow: 0 0 0 3px rgba(0, 105, 64, 0.15);
+            outline: none;
+        }
+
+        /* ===== REMEMBER ME ===== */
+        .remember-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .remember-wrapper input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--nigeria-green);
+            cursor: pointer;
+        }
+
+        /* ===== BUTTON ===== */
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--nigeria-green);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition), transform var(--transition);
+        }
+
+        button:hover {
+            background: var(--nigeria-green-dark);
+            transform: scale(1.03);
+        }
+
+        /* ===== FLASH MESSAGES ===== */
+        .flash-messages {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+
+        .flash-messages li {
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .flash-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .flash-success {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>Staff Login</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flash-messages">
+            {% for category, message in messages %}
+                <li class="flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label>Email:</label>
+            <input type="email" name="email" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" required>
+
+            <label class="remember-wrapper">
+                <input type="checkbox" name="remember">
+                Remember Me
+            </label>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+</body>
+</html>
