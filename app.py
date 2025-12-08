@@ -14,7 +14,7 @@ app.permanent_session_lifetime = timedelta(days=1)
 RATEL_DB_URL = os.getenv("RATEL_DB_URL")
 def get_db():
     if "db" not in g:
-        g.db = psycopg2.connect(RATEL_DB_URL)
+        g.db = psycopg2.connect(RATEL_DB_URL, sslmode="require")
     return g.db
 
 @app.teardown_appcontext
