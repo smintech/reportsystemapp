@@ -171,6 +171,6 @@ def admin_logout():
     return redirect(url_for("admin_login"))
     
 if __name__ == "__main__":
-    with app.app_context():
-    init_db()
+     with app.app_context():
+         init_db()
     app.run(debug=True)
