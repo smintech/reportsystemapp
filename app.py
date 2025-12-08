@@ -5,44 +5,38 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
 import secrets
+import psycopg2
+import psycopg2.extras
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
-DATABASE = "database.db"
+RATEL_DB_URL = os.getenv("RATEL_DB_URL")
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DATABASE)
-        print(f"Flask app database path: {os.path.abspath(DATABASE)}")
-        g.db.row_factory = sqlite3.Row
+        g.db = psycopg2.connect(RATEL_DB_URL)
     return g.db
 
 @app.teardown_appcontext
 def close_db(exception):
     db = g.pop("db", None)
-    if db is not None:
+    if db:
         db.close()
         
 def init_db():
     """Initialize database and default admin"""
-    db = sqlite3.connect(DATABASE)
-    db.execute("""
-        CREATE TABLE IF NOT EXISTS user (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT NOT NULL UNIQUE,
-            password_hash TEXT NOT NULL,
-            role TEXT NOT NULL,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
+    db = get_db()
+    cur = db.cursor(
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
     """)
-db = sqlite3.connect(DATABASE)
-admin_email = "admin@ratel.com"
-admin_password_hash = generate_password_hash("admin7070")
-exists = db.execute("SELECT * FROM user WHERE email = ?", (admin_email,)).fetchone()
-if not exists:
-    db.execute("INSERT INTO user (email, password_hash, role) VALUES (?, ?, ?)",
-    (admin_email, admin_password_hash, "admin"))
     db.commit()
-    db.close()
+    cur.close()
 
 @app.route("/")
 def home():
@@ -80,10 +74,13 @@ def admin_login():
         remember = "remember" in request.form
 
         db = get_db()
-        admin = db.execute(
-            "SELECT * FROM user WHERE email = ? AND role = 'admin'",
+        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute(
+            "SELECT * FROM users WHERE email=%s AND role='admin'",
             (email,)
-        ).fetchone()
+        )
+        admin = cur.fetchone()
 
         if admin and check_password_hash(admin["password_hash"], password):
             if remember:
@@ -107,14 +104,20 @@ def admin_dashboard():
     session["dashboard_token"] = secrets.token_hex(16)
 
     db = get_db()
-    users = db.execute("SELECT * FROM user").fetchall()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    cur.execute("SELECT * FROM users ORDER BY id ASC")
+    users = cur.fetchall()
     return render_template("admin_dashboard.html", users=users)
     
 @app.route("/users")
 @adminonly
 def list_users():
     db = get_db()
-    users = db.execute("SELECT * FROM user").fetchall()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    cur.execute("SELECT * FROM users ORDER BY id ASC")
+    users = cur.fetchall()
     return render_template("users.html", users=users)
     
 @app.route("/add_user", methods=["GET", "POST"])
@@ -124,17 +127,20 @@ def add_user():
         email = request.form["email"]
         role = request.form["role"]
         password = request.form["password"]
+        
+        hashed_password = generate_password_hash(password)
 
         db = get_db()
-        hashed_password = generate_password_hash(password)
-        try:
-            db.execute(
-                "INSERT INTO user (email, password_hash, role) VALUES (?, ?, ?)",
-                (email, hashed_password, role)
-            )
-            db.commit()
-            flash("User added successfully!", "success")
-        except sqlite3.IntegrityError:
+        cur = db.cursor()
+        
+        cur.execute(
+            "INSERT INTO users (email, password_hash, role) VALUES (%s, %s, %s)",
+            (email, hashed, role)
+        )
+        
+        db.commit()
+        flash("User added successfully!", "success")
+        except psycopg2.IntegrityError:
             flash("User with this email already exists!", "error")
         return redirect(url_for("admin_dashboard"))
 
@@ -148,7 +154,9 @@ def delete_user(user_id):
         return redirect(url_for("admin_login"))
 
     db = get_db()
-    db.execute("DELETE FROM user WHERE id = ?", (user_id,))
+    cur = db.cursor
+    
+    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
     db.commit()
     flash("User deleted successfully!", "success")
     return redirect(url_for("admin_dashboard"))
@@ -160,5 +168,6 @@ def admin_logout():
     return redirect(url_for("admin_login"))
     
 if __name__ == "__main__":
+    with app.app_context():
     init_db()
     app.run(debug=True)
