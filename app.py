@@ -143,6 +143,7 @@ def add_user():
             db.commit()
             flash("User added successfully!", "success")
         except IntegrityError:
+            db.rollback()
             flash("User with this email already exists!", "error")
         return redirect(url_for("admin_dashboard"))
 
