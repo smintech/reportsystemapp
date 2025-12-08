@@ -36,6 +36,11 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    
+    cur.execute("""
+    CREATE UNIQUE INDEX IF NOT EXISTS unique_admin ON users((CASE WHEN role='admin' THEN 1 ELSE NULL END));
+    """)
+    
     db.commit()
     cur.close()
 
@@ -132,7 +137,14 @@ def add_user():
         hashed_password = generate_password_hash(password)
 
         db = get_db()
-        cur = db.cursor()
+        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        if role.lower() == "admin":
+            cur.execute("SELECT * FROM users WHERE role='admin'")
+            existing_admin = cur.fetchone()
+            if existing_admin:
+                flash("An admin already exists!.", "error")
+                return redirect(url_for("admin_dashboard))
         
         try:
             cur.execute(
