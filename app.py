@@ -1,5 +1,6 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session , flash
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 DATABASE = "database.db"
@@ -31,17 +32,17 @@ def admin_login():
             (email,)
         ).fetchone()
 
-        if admin and admin["password_hash"] == password:
+        if admin and check_password_hash(admin["password_hash"], password):
             session["admin_logged_in"] = True
-            flash("Welcome, admin!")
-            return redirect(url_for("admin"))
+            flash("Welcome, admin!", "success")
+            return redirect(url_for("admin_dashboard"))
         else:
             flash("Invalid admin credentials!", "error")
 
     return render_template("admin_login.html")
     
 @app.route("/admin")
-def admin():
+def admin_dashboard():
     if not session.get("admin_logged_in"):
         flash("Please log in as admin first!", "error")
         return redirect(url_for("admin_login"))
@@ -61,25 +62,31 @@ def add_user():
     if request.method == "POST":
         email = request.form["email"]
         role = request.form["role"]
-        password_hash = request.form["password"]  # (plain text for now)
+        password = request.form["password"]  # (plain text for now)
 
         db = get_db()
+        hashed_password = generate_password_hash(password)
         db.execute(
             "INSERT INTO user (email, password_hash, role, created_at) VALUES (?, ?, ?, datetime('now'))",
-            (email, password_hash, role)
+            (email, hashed_password, role)
         )
         db.commit()
-
-        return redirect(url_for("list_users"))
-
-    return render_template("add_users.html")
+        flash("User added successfully!", "success")
+        return redirect(url_for("admin_dashboard"))
+        
+    return redirect(url_for("add_users"))
 
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
 def delete_user(user_id):
+    if not session.get("admin_logged_in"):
+        flash("Please log in first.", "error")
+        return redirect(url_for("admin_login"))
+
     db = get_db()
     db.execute("DELETE FROM user WHERE id = ?", (user_id,))
     db.commit()
-    return redirect(url_for("list_users"))
+    flash("User deleted successfully!", "success")
+    return redirect(url_for("admin_dashboard"))
     
 if __name__ == "__main__":
     app.run(debug=True)
