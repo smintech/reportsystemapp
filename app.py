@@ -24,7 +24,7 @@ def home():
 def admin_login():
     if request.method == "POST":
         email = request.form["email"]
-        password_hash = request.form["password"]
+        password = request.form["password"]
 
         db = get_db()
         admin = db.execute(
