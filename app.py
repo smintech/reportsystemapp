@@ -7,6 +7,7 @@ from datetime import timedelta
 import secrets
 import psycopg2
 import psycopg2.extras
+from psycopg2 import IntegrityError
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
@@ -133,14 +134,15 @@ def add_user():
         db = get_db()
         cur = db.cursor()
         
-        cur.execute(
-            "INSERT INTO users (email, password_hash, role) VALUES (%s, %s, %s)",
-            (email, hashed, role)
-        )
-        
-        db.commit()
-        flash("User added successfully!", "success")
-        except psycopg2.IntegrityError:
+        try:
+            cur.execute(
+                "INSERT INTO users (email, password_hash, role) VALUES (%s, %s, %s)",
+                (email, hashed, role)
+            )
+            
+            db.commit()
+            flash("User added successfully!", "success")
+        except IntegrityError:
             flash("User with this email already exists!", "error")
         return redirect(url_for("admin_dashboard"))
 
