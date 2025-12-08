@@ -144,7 +144,7 @@ def add_user():
             existing_admin = cur.fetchone()
             if existing_admin:
                 flash("An admin already exists!.", "error")
-                return redirect(url_for("admin_dashboard))
+                return redirect(url_for("admin_dashboard"))
         
         try:
             cur.execute(
