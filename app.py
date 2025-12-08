@@ -2,7 +2,7 @@ from flask import Flask, render_template, g, request, redirect, url_for, session
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
-app.secret_key = "admin_logged_in_$$"
+app.secret_key = "admin_logged_in_77"
 DATABASE = "database.db"
 def get_db():
     if "db" not in g:
@@ -33,7 +33,7 @@ def admin_login():
         ).fetchone()
 
         if admin and check_password_hash(admin["password_hash"], password):
-            session["admin_logged_in_$$"] = True
+            session["admin_logged_in_"] = True
             flash("Welcome, admin!", "success")
             return redirect(url_for("admin_dashboard"))
         else:
@@ -43,7 +43,7 @@ def admin_login():
     
 @app.route("/admin")
 def admin_dashboard():
-    if not session.get("admin_logged_in_$$"):
+    if not session.get("admin_logged_in_"):
         flash("Please log in as admin first!", "error")
         return redirect(url_for("admin_login"))
 
@@ -74,11 +74,11 @@ def add_user():
         flash("User added successfully!", "success")
         return redirect(url_for("admin_dashboard"))
         
-    return redirect(url_for("add_users.html"))
+    return render_template("add_users.html")
 
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
 def delete_user(user_id):
-    if not session.get("admin_logged_in_$$"):
+    if not session.get("admin_logged_in_"):
         flash("Please log in first.", "error")
         return redirect(url_for("admin_login"))
 
@@ -90,7 +90,7 @@ def delete_user(user_id):
     
 @app.route("/admin_logout")
 def admin_logout():
-    session.pop("admin_logged_in_$$", None)
+    session.pop("admin_logged_in_", None)
     flash("Logged out successfully.", "success")
     return redirect(url_for("admin_login"))
     
