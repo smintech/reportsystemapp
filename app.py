@@ -3,6 +3,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
+import secrets
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=30)
@@ -31,6 +32,21 @@ def adminonly(f):
             return redirect(url_for("admin_login"))
         return f(*args, **kwargs)
     return decorated_function
+    
+def admin_dashboard_only(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            flash("You must log in as admin first!", "error")
+            return redirect(url_for("admin_login"))
+        
+        # Check if dashboard token exists
+        if not session.get("dashboard_token"):
+            flash("You can only access this page via the dashboard!", "error")
+            return redirect(url_for("admin_dashboard"))
+
+        return f(*args, **kwargs)
+    return decorated
     
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
@@ -63,6 +79,8 @@ def admin_dashboard():
     if not session.get("admin_logged_in"):
         flash("Please log in as admin first!", "error")
         return redirect(url_for("admin_login"))
+        
+    session["dashboard_token"] = secrets.token_hex(16)
 
     db = get_db()
     users = db.execute("SELECT * FROM user").fetchall()
