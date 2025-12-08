@@ -114,7 +114,7 @@ def admin_dashboard():
     db = get_db()
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
-    cur.execute("SELECT * FROM users ORDER BY user_id ASC")
+    cur.execute("SELECT * FROM users ORDER BY id ASC")
     users = cur.fetchall()
     return render_template("admin_dashboard.html", users=users)
     
@@ -124,7 +124,7 @@ def list_users():
     db = get_db()
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
-    cur.execute("SELECT * FROM users ORDER BY user_id ASC")
+    cur.execute("SELECT * FROM users ORDER BY id ASC")
     users = cur.fetchall()
     return render_template("users.html", users=users)
     
@@ -173,7 +173,7 @@ def delete_user(user_id):
     db = get_db()
     cur = db.cursor
     
-    cur.execute("DELETE FROM users WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
     db.commit()
     flash("User deleted successfully!", "success")
     return redirect(url_for("admin_dashboard"))
