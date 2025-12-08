@@ -35,11 +35,11 @@ def init_db():
         )
     """)
 admin_email = "admin@ratel.com"
-    admin_password_hash = generate_password_hash("admin7070")
-    exists = db.execute("SELECT * FROM user WHERE email = ?", (admin_email,)).fetchone()
-    if not exists:
-        db.execute("INSERT INTO user (email, password_hash, role) VALUES (?, ?, ?)",
-                   (admin_email, admin_password_hash, "admin"))
+admin_password_hash = generate_password_hash("admin7070")
+exists = db.execute("SELECT * FROM user WHERE email = ?", (admin_email,)).fetchone()
+if not exists:
+    db.execute("INSERT INTO user (email, password_hash, role) VALUES (?, ?, ?)",
+    (admin_email, admin_password_hash, "admin"))
     db.commit()
     db.close()
 
