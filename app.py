@@ -88,5 +88,11 @@ def delete_user(user_id):
     flash("User deleted successfully!", "success")
     return redirect(url_for("admin_dashboard"))
     
+@app.route("/admin_logout")
+def admin_logout():
+    session.pop("admin_logged_in", None)
+    flash("Logged out successfully.", "success")
+    return redirect(url_for("admin_login"))
+    
 if __name__ == "__main__":
     app.run(debug=True)
