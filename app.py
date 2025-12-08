@@ -1,4 +1,5 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session , flash
+import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -11,6 +12,7 @@ DATABASE = "database.db"
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(DATABASE)
+        print(f"Flask app database path: {os.path.abspath(DATABASE)}")
         g.db.row_factory = sqlite3.Row
     return g.db
 
