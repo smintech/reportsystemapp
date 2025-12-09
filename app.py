@@ -188,12 +188,13 @@ def staff_login():
         db = get_db()
         cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        cur.execute("SELECT * FROM users WHERE email = ? AND role != 'admin'",(email,))
+        cur.execute("SELECT * FROM users WHERE email = %s AND role != 'admin'", (email,))
         user = cur.fetchone()
 
         if user and check_password_hash(user["password_hash"], password):
             session["staff_logged_in"] = True
             session["staff_role"] = user["role"]
+            session["staff_email"] = user["email"]
             session.permanent = remember
             
             flash(f"Welcome {user['role'].capitalize()}!", "success")
@@ -211,6 +212,7 @@ def staff_dashboard():
         return redirect(url_for("staff_login"))
         
     role = session.get("staff_role", "Staff")
+    email = session.get("staff_email", "Unknown")
 
     return render_template("staff_dashboard.html",
                            staff_email=session["staff_email"],
