@@ -115,10 +115,34 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
-  // === Optional: Device Fingerprint ===
   const fingerprintInput = document.getElementById('fingerprint');
   if (fingerprintInput) {
-      // Simple fingerprint: userAgent + random UUID
-      fingerprintInput.value = btoa(navigator.userAgent + '_' + crypto.randomUUID());
+      const cookieName = "anon_id";
+      let anonId = getCookie(cookieName);
+      if (!anonId) {
+          anonId = "anon_" + crypto.randomUUID();
+          setCookie(cookieName, anonId, 90); // 90 days
+      }
+      fingerprintInput.value = anonId;
+  }
+
+  // Helper functions for cookies
+  function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days*24*60*60*1000));
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+  }
+
+  function getCookie(name) {
+      const cname = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) === ' ') c = c.substring(1);
+          if (c.indexOf(cname) === 0) return c.substring(cname.length, c.length);
+      }
+      return "";
   }
 });
