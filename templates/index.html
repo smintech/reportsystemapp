@@ -7,110 +7,158 @@
     <title>ClearSignal</title>
 </head>
 <body class="bodyparent">
+
 <div class="header">
-  <h class="roboto-font">Ratel Movement Report System</h>
-    <p class="roboto-jnr">report safe,report confidently</p>
+    <h1 class="roboto-font">Ratel Movement Report System</h1>
+    <p class="roboto-jnr">Report safe, report confidently</p>
 </div>
+
 <div id="moveup" class="moveup">
-    <textarea name="report" id="report" minlength="20" maxlength="1000" placeholder="Write Report..........."></textarea>
-    <p id="charcount">*0/1000</p>
-    <p id="error">Minimum 20 characters required.</p>
-    <button id="submitbtn">Submit</button>
-     <input type="file" id="fileinput" multiple>
 
-      <div id="container" class="preview-box">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li style="color: {{ 'red' if category=='error' else 'green' }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    
+     {% if tracking_id %}
+        <div class="tracking-id-box">
+            <strong>Your Tracking ID:</strong> {{ tracking_id }}
+        </div>
+    {% endif %}
 
-      </div>
-<div class="categorywrapper">
-    <div class="select-header">Select a Category</div>
-    <ul class="select-options">
-        <li class="category-group">
-            <span class="category-label">Government</span>
-            <ul class="options-group">
-                <li data-value="embezzlement">Embezzlement</li>
-                <li data-value="looting">Looting</li>
-                <li data-value="overbilling">Overbilling</li>
-                <li data-value="allocation">Allocation</li>
-                <li data-value="under-the-table-payment">Under the table payment</li>
-                <li data-value="ghostworkers">Ghostworkers</li>
+    <form id="reportForm" method="POST" action="/" enctype="multipart/form-data">
+        <label>
+            Your email (optional):
+            <input type="email" name="reporter_email" placeholder="you@example.com">
+        </label>
+        <br><br>
+
+        <label>
+            Report Details:
+            <textarea name="details" id="report" minlength="20" maxlength="1000" placeholder="Write your report..." required></textarea>
+        </label>
+        <p id="charcount">0/1000</p>
+        <p id="error">Minimum 20 characters required.</p>
+        <br>
+
+        <label>
+            Evidence (optional, URLs or notes):
+            <input type="text" name="evidence">
+        </label>
+        <br><br>
+
+        <label>
+            Attach files (optional):
+            <input type="file" id="fileinput" name="files" multiple>
+        </label>
+        <br><br>
+
+        <div class="categorywrapper">
+            <div class="select-header">Select a Category</div>
+            <ul class="select-options">
+                <li class="category-group">
+                    <span class="category-label">Government</span>
+                    <ul class="options-group">
+                        <li data-value="Embezzlement">Embezzlement</li>
+                        <li data-value="Looting">Looting</li>
+                        <li data-value="Overbilling">Overbilling</li>
+                        <li data-value="Allocation">Allocation</li>
+                        <li data-value="Under the table payment">Under the table payment</li>
+                        <li data-value="Ghostworkers">Ghostworkers</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Oil</span>
+                    <ul class="options-group">
+                        <li data-value="Policy Twisting">Policy Twisting</li>
+                        <li data-value="Diverting Public Funds">Diverting Public Funds</li>
+                        <li data-value="Management Manipulation">Management Manipulation</li>
+                        <li data-value="Business Manipulation">Business Manipulation</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Elections</span>
+                    <ul class="options-group">
+                        <li data-value="Vote Buying">Vote Buying</li>
+                        <li data-value="Forging">Forging</li>
+                        <li data-value="Pressure">Pressure</li>
+                        <li data-value="Influence">Influence</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Court</span>
+                    <ul class="options-group">
+                        <li data-value="Bribery">Bribery</li>
+                        <li data-value="Pressure">Pressure</li>
+                        <li data-value="Delay">Delay</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">School</span>
+                    <ul class="options-group">
+                        <li data-value="Cheating">Cheating</li>
+                        <li data-value="Grading">Grading</li>
+                        <li data-value="Nepotism">Nepotism</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Business</span>
+                    <ul class="options-group">
+                        <li data-value="Tax Evasion">Tax Evasion</li>
+                        <li data-value="Fake Goods">Fake Goods</li>
+                        <li data-value="Scamming">Scamming</li>
+                        <li data-value="Conspiracy">Conspiracy</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Hospital</span>
+                    <ul class="options-group">
+                        <li data-value="Bribery">Bribery</li>
+                        <li data-value="Favoritism">Favoritism</li>
+                        <li data-value="Overbilling">Overbilling</li>
+                        <li data-value="Misuse Of Funds">Misuse Of Funds</li>
+                        <li data-value="GhostWorkers">GhostWorkers</li>
+                        <li data-value="Procurement Fraud">Procurement Fraud</li>
+                        <li data-value="Stealing Of Drugs">Stealing Of Drugs</li>
+                        <li data-value="Undispose Expired Drugs">Undispose Expired Drugs</li>
+                        <li data-value="Delay Of Service">Delay Of Service</li>
+                        <li data-value="Fake Records">Fake Records</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Common Man</span>
+                    <ul class="options-group">
+                        <li data-value="Tipping">Tipping</li>
+                        <li data-value="Extortion">Extortion</li>
+                        <li data-value="Shortcut">Shortcut</li>
+                        <li data-value="Overbilling">Overbilling</li>
+                        <li data-value="ThankYou Payment">ThankYou Payment</li>
+                        <li data-value="Murder">Murder</li>
+                        <li data-value="Brutal Fight">Brutal Fight</li>
+                        <li data-value="Human Trafficking">Human Trafficking</li>
+                    </ul>
+                </li>
+                <li class="category-group">
+                    <span class="category-label">Others</span>
+                    <ul class="options-group"></ul>
+                </li>
             </ul>
-        </li>
-        <li class="category-group">
-            <span class="category-label">Oil</span>
-            <ul class="options-group">
-                <li data-value="policy-twisting">Policy Twisting</li>
-                <li data-value="diverting-public-funds">Diverting Public Funds</li>
-                <li data-value="management-manipulation">Management Manipulation</li>
-                <li data-value="business-manipulation">Business Manipulation</li>
-            </ul>
-        </li>
-        <li class="category-group">
-            <span class="category-label">Elections</span>
-            <ul class="options-group">
-                <li data-value="vote-buying">Vote Buying</li>
-                <li data-value="forging">Forging</li>
-                <li data-value="coercion">Pressure</li>
-                <li data-value="influence">Influence</li>
-             </ul>
-        </li>
-          <li class="category-group">
-            <span class="category-label">Court</span>
-            <ul class="options-group">
-                <li data-value="bribery">Bribery</li>
-                <li data-value="pressure">Pressure</li>
-                <li data-value="delay">Delay</li>
-            </ul>
-        </li>
-          <li class="category-group">
-            <span class="category-label">School</span>
-            <ul class="options-group">
-                <li data-value="cheating">Cheating</li>
-                <li data-value="grading">Grading</li>
-                <li data-value="nepotism">Nepotism</li>
-            </ul>
-        </li>
-          <li class="category-group">
-            <span class="category-label">Business</span>
-            <ul class="options-group">
-                <li data-value="tax-evasion<">Tax Evasion</li>
-                <li data-value="fake-goods">Fake Goods</li>
-                <li data-value="scamming">Scamming</li>
-                <li data-value="conspiracy">Conspiracy</li>
-            </ul>
-        </li>
-        <li class="category-group">
-            <span class="category-label">Hospital</span>
-            <ul class="options-group">
-                <li data-value="bribery<">Bribery</li>
-                <li data-value="favoritism">Favoritism</li>
-                <li data-value="overbilling">Overbilling</li>
-                <li data-value="misuse-of-funds">Misuse Of Funds</li>
-                <li data-value="ghostworkers">GhostWorkers</li>
-                <li data-value="procurement-fraud">Procurement Fraud</li>
-                <li data-value="stealing-of-drugs">Stealing Of Drugs</li>
-                <li data-value="undispose-expired-drugs">Undispose Expired Drugs</li>
-                <li data-value="delay-of-service">Delay Of Service</li>
-                <li data-value="fake-records">Fake Records</li>
-            </ul>
-        </li>
-          <li class="category-group">
-            <span class="category-label">Common Man</span>
-            <ul class="options-group">
-                <li data-value="tipping">Tipping</li>
-                <li data-value="extortion">Extortion</li>
-                <li data-value="shortcut">Shortcut</li>
-                <li data-value="overbilling">Overbilling</li>
-                <li data-value="thankyou-payment">ThankYou Payment</li>
-                <li data-value="murder">Murder</li>
-                <li data-value="brutal-fight">Brutal Fight</li>
-                <li data-value="human-trafficking">Human Trafficking</li>
-            </ul>
-        </li>
-      <li class="category-group">
-            <span class="category-label">Others(Include in your form)</span>
-            <ul class="options-group"></ul>
-        </li>
-    </ul>
+        </div>
+
+        <!-- Hidden input for category selection -->
+        <input type="hidden" name="title" id="categoryInput">
+
+        <!-- Hidden input for fingerprint -->
+        <input type="hidden" name="fingerprint" id="fingerprint">
+
+        <br><br>
+        <button type="submit" id="submitbtn">Submit</button>
+    </form>
 </div>
 </div>
 <div class="footer">
