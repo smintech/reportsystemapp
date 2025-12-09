@@ -186,32 +186,31 @@ def staff_login():
         remember = "remember" in request.form
 
         db = get_db()
-        staff = cur.execute(
-            "SELECT * FROM users WHERE email = ? AND role != 'admin'",
-            (email,)
-        ).fetchone()
+        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("SELECT * FROM users WHERE email = ? AND role != 'admin'",(email,))
+        user = cur.fetchone()
 
-        if staff and check_password_hash(staff["password_hash"], password):
-            if remember:
-                session.permanent = True
-            else:
-                session.permanent = False
+        if user and check_password_hash(user["password_hash"], password):
             session["staff_logged_in"] = True
-            session["staff_email"] = staff["email"]
-            session["staff_role"] = staff["role"]
-            flash("Welcome, staff!", "success")
+            session["staff_role"] = user["role"]
+            session.permanent = remember
+            
+            flash(f"Welcome {user['role'].capitalize()}!", "success")
+            
             return redirect(url_for("staff_dashboard"))
         else:
             flash("Invalid credentials!", "error")
 
     return render_template("staff_login.html")
 
-
 @app.route("/staff_dashboard")
 def staff_dashboard():
     if not session.get("staff_logged_in"):
         flash("Please log in as staff first!", "error")
         return redirect(url_for("staff_login"))
+        
+    role = session.get("staff_role", "Staff")
 
     return render_template("staff_dashboard.html",
                            staff_email=session["staff_email"],
