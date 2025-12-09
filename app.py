@@ -103,21 +103,18 @@ def home():
             if row:
                 active_tracking = row["tracking_id"]
                 
-            if active_tracking:
-            tracking_id = active_tracking
-        else:
-            tracking_id = str(uuid.uuid4())
+            tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
+            title = category
             
-        cur.execute("""
-            INSERT INTO reports
-            (anon_id, fingerprint, reporter_email, tracking_id, title, details, evidence, status, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            RETURNING id
-        """, (anon_id, fingerprint, reporter_email, tracking_id, title, details, evidence))
-        db.commit()
-        cur.close()
+            cur.execute("""
+                INSERT INTO reports
+                (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+            """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence))
+            db.commit()
+            cur.close()
             
-        response = make_response(redirect(url_for("home"))
+        response = make_response(redirect(url_for("home")))
         response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
         flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
         return response
@@ -162,27 +159,18 @@ def admin_login():
         remember = "remember" in request.form
 
         db = get_db()
-        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-        cur.execute(
-            "SELECT * FROM users WHERE email=%s AND role='admin'",
-            (email,)
-        )
-        admin = cur.fetchone()
-
-        if admin and check_password_hash(admin["password_hash"], password):
-
-            session["admin_logged_in"] = True
-            session["dashboard_token"] = secrets.token_hex(16)
-
-            session.permanent = True if remember else False
-
-            flash("Welcome, admin!", "success")
-            return redirect(url_for("admin_dashboard"))
-
-        else:
-            flash("Invalid admin credentials!", "error")
-
+        with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute("SELECT * FROM users WHERE email=%s AND role='admin'", (email,))
+            admin = cur.fetchone()
+            if admin and check_password_hash(admin["password_hash"], password):
+                session["admin_logged_in"] = True
+                session["dashboard_token"] = secrets.token_hex(16)
+                session.permanent = True if remember else False
+                flash("Welcome, admin!", "success")
+                return redirect(url_for("admin_dashboard"))
+            else:
+                flash("Invalid admin credentials!", "error")
+                
     return render_template("admin_login.html")
     
 @app.route("/admin")
@@ -207,10 +195,9 @@ def admin_dashboard():
 @adminonly
 def list_users():
     db = get_db()
-    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
-    cur.execute("SELECT * FROM users ORDER BY id ASC")
-    users = cur.fetchall()
+    with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute("SELECT * FROM users ORDER BY id ASC")
+        users = cur.fetchall()
     return render_template("users.html", users=users)
     
 @app.route("/add_user", methods=["GET", "POST"])
@@ -224,26 +211,23 @@ def add_user():
         hashed_password = generate_password_hash(password)
 
         db = get_db()
-        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        
-        if role.lower() == "admin":
-            cur.execute("SELECT * FROM users WHERE role='admin'")
-            existing_admin = cur.fetchone()
-            if existing_admin:
-                flash("An admin already exists!.", "error")
-                return redirect(url_for("admin_dashboard"))
-        
-        try:
-            cur.execute(
-                "INSERT INTO users (email, password_hash, role) VALUES (%s, %s, %s)",
-                (email, hashed_password, role)
-            )
-            
-            db.commit()
-            flash("User added successfully!", "success")
-        except psycopg2.IntegrityError:
-            db.rollback()
-            flash("User with this email already exists!", "error")
+        with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            if role.lower() == "admin":
+                cur.execute("SELECT * FROM users WHERE role='admin'")
+                existing_admin = cur.fetchone()
+                if existing_admin:
+                    flash("An admin already exists!.", "error")
+                    return redirect(url_for("admin_dashboard"))
+            try:
+                cur.execute(
+                    "INSERT INTO users (email, password_hash, role) VALUES (%s, %s, %s)",
+                    (email, hashed_password, role)
+                )
+                db.commit()
+                flash("User added successfully!", "success")
+            except psycopg2.IntegrityError:
+                db.rollback()
+                flash("User with this email already exists!", "error")
         return redirect(url_for("admin_dashboard"))
 
     return render_template("add_users.html")
@@ -256,7 +240,7 @@ def delete_user(user_id):
         return redirect(url_for("admin_login"))
 
     db = get_db()
-    cur = db.cursor
+    with db.cursor() as cur:
     
     cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
     db.commit()
@@ -271,22 +255,18 @@ def staff_login():
         remember = "remember" in request.form
 
         db = get_db()
-        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        
-        cur.execute("SELECT * FROM users WHERE email = %s AND role != 'admin'", (email,))
-        user = cur.fetchone()
-
-        if user and check_password_hash(user["password_hash"], password):
-            session["staff_logged_in"] = True
-            session["staff_role"] = user["role"]
-            session["staff_email"] = user["email"]
-            session.permanent = remember
-            
-            flash(f"Welcome {user['role'].capitalize()}!", "success")
-            
-            return redirect(url_for("staff_dashboard"))
-        else:
-            flash("Invalid credentials!", "error")
+        with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute("SELECT * FROM users WHERE email = %s AND role != 'admin'", (email,))
+            user = cur.fetchone()
+            if user and check_password_hash(user["password_hash"], password):
+                session["staff_logged_in"] = True
+                session["staff_role"] = user["role"]
+                session["staff_email"] = user["email"]
+                session.permanent = True if remember else False
+                flash(f"Welcome {user['role'].capitalize()}!", "success")
+                return redirect(url_for("staff_dashboard"))
+            else:
+                flash("Invalid credentials!", "error")
 
     return render_template("staff_login.html")
 
@@ -298,17 +278,13 @@ def staff_dashboard():
         
         db = get_db
         cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 200)
+        cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 200")
         reports = cur.fetchall()
         cur.close()
-        return render_template("staff_dashboard.html", reports=reports)
-        
-    role = session.get("staff_role", "Staff")
-    email = session.get("staff_email", "Unknown")
-
-    return render_template("staff_dashboard.html",
+        return render_template("staff_dashboard.html",
                            staff_email=session["staff_email"],
                            staff_role=session["staff_role"])
+                            reports=reports)
     
 @app.route("/admin_logout")
 def admin_logout():
