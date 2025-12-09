@@ -200,8 +200,9 @@ def admin_dashboard():
     
     cur.execute("SELECT * FROM users ORDER BY id ASC")
     users = cur.fetchall()
-    cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 100")
+    cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
+    
     cur.close()
     return render_template("admin_dashboard.html", users=users, reports=reports)
     
