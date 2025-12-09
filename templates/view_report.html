@@ -170,7 +170,7 @@ a.back-link:hover {
         <p>No evidence submitted.</p>
     {% endif %}
 
-    <p><strong>Assigned To:</strong> {{ report.assigned_to if report.assigned_to else "Not assigned" }}</p>
+    <p><strong>Assigned To:</strong> {{ report.assigned_staff_id if report.assigned_staff_id else "Not assigned" }}</p>
 </div>
 
 <div class="card">
