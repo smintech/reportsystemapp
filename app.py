@@ -222,8 +222,6 @@ def admin_logout():
     session.pop("admin_logged_in", None)
     flash("Logged out successfully.", "success")
     return redirect(url_for("admin_login"))
-    
-role"])
 
 @app.route("/staff_logout")
 def staff_logout():
