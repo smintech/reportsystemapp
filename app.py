@@ -122,8 +122,7 @@ def home():
         flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
         return response
         
-    return render_template("index.html")
-    
+    return render_template("index.html", tracking_id=tracking_id)
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
