@@ -243,10 +243,9 @@ def delete_user(user_id):
 
     db = get_db()
     with db.cursor() as cur:
-    
-    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
-    db.commit()
-    flash("User deleted successfully!", "success")
+        cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
+        db.commit()
+        flash("User deleted successfully!", "success")
     return redirect(url_for("admin_dashboard"))
     
 @app.route("/staff_login", methods=["GET", "POST"])
