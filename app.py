@@ -1,6 +1,5 @@
-from flask import Flask, render_template, g, request, redirect, url_for, session , flash
+from flask import Flask, render_template, g, request, redirect, url_for, session , flash, jsonify, make_response
 import os
-import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
@@ -8,6 +7,8 @@ import secrets
 import psycopg2
 import psycopg2.extras
 from psycopg2 import IntegrityError
+import uuid
+import hashlib
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
@@ -24,7 +25,7 @@ def close_db(exception):
         db.close()
         
 def init_db():
-    """Initialize database and default admin"""
+    """Create tables if missing (users + reports). Run once at startup."""
     db = get_db()
     cur = db.cursor()
     cur.execute("""
@@ -36,7 +37,25 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS reports (
+        id SERIAL PRIMARY KEY,
+        anon_id TEXT,
+        fingerprint TEXT,
+        reporter_email TEXT,
+        tracking_id TEXT,
+        category TEXT NOT NULL,
+        details TEXT NOT NULL,
+        evidence TEXT,
+        status TEXT NOT NULL DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
     
+    cur.execute("""
+    CREATE INDEX IF NOT EXISTS idx_reports_active ON reports (anon_id, fingerprint, reporter_email, status);
+    """)
     cur.execute("""
     CREATE UNIQUE INDEX IF NOT EXISTS unique_admin ON users((CASE WHEN role='admin' THEN 1 ELSE NULL END));
     """)
@@ -44,9 +63,73 @@ def init_db():
     db.commit()
     cur.close()
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def home():
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    if request.method == "POST":
+        reporter_email = request.form.get("reporter_email") or None
+        fingerprint = request.form.get("fingerprint") or None
+        category = request.form.get("category", "").strip()
+        details = request.form.get("details", "").strip()
+        evidence = request.form.get("evidence", "").strip() or None
+        
+        if not category or not details:
+            flash("Category and details are required.", "error")
+            return redirect(url_for("home"))
+            
+            anon_id = request.cookies.get("anon_id")
+        if not anon_id:
+            anon_id = "anon_" + str(uuid.uuid4())
+            
+            if reporter_email:
+            cur.execute("""
+                SELECT tracking_id FROM reports
+                WHERE reporter_email = %s AND status IN ('Pending', 'In Progress')
+                ORDER BY created_at DESC LIMIT 1
+            """, (reporter_email,))
+            row = cur.fetchone()
+            if row:
+                active_tracking = row["tracking_id"]
+                
+            if not active_tracking and anon_id and fingerprint:
+            cur.execute("""
+                SELECT tracking_id FROM reports
+                WHERE anon_id = %s AND fingerprint = %s AND status IN ('Pending', 'In Progress')
+                ORDER BY created_at DESC LIMIT 1
+            """, (anon_id, fingerprint))
+            row = cur.fetchone()
+            if row:
+                active_tracking = row["tracking_id"]
+                
+            if active_tracking:
+            tracking_id = active_tracking
+        else:
+            tracking_id = str(uuid.uuid4())
+            
+        cur.execute("""
+            INSERT INTO reports
+            (anon_id, fingerprint, reporter_email, tracking_id, title, details, evidence, status, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+            RETURNING id
+        """, (anon_id, fingerprint, reporter_email, tracking_id, title, details, evidence))
+        db.commit()
+        cur.close()
+            
+        response = make_response(redirect(url_for("home"))
+        response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
+        flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
+        return response
+        
     return render_template("index.html")
+    
+    
+def get_or_create_anon_cookie():
+    anon_id = request.cookies.get("anon_id")
+    if not anon_id:
+        anon_id = "anon_" + str(uuid.uuid4())
+    return anon_id
     
 def adminonly(f):
     @wraps(f)
@@ -116,7 +199,10 @@ def admin_dashboard():
     
     cur.execute("SELECT * FROM users ORDER BY id ASC")
     users = cur.fetchall()
-    return render_template("admin_dashboard.html", users=users)
+    cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 100")
+    reports = cur.fetchall()
+    cur.close()
+    return render_template("admin_dashboard.html", users=users, reports=reports)
     
 @app.route("/users")
 @adminonly
@@ -211,6 +297,13 @@ def staff_dashboard():
         flash("Please log in as staff first!", "error")
         return redirect(url_for("staff_login"))
         
+        db = get_db
+        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 200)
+        reports = cur.fetchall()
+        cur.close()
+        return render_template("staff_dashboard.html", reports=reports)
+        
     role = session.get("staff_role", "Staff")
     email = session.get("staff_email", "Unknown")
 
@@ -231,6 +324,24 @@ def staff_logout():
     session.pop("staff_role", None)
     flash("Logged out successfully.", "success")
     return redirect(url_for("staff_login"))
+    
+@app.route("/track/<tracking_id>")
+def track_status(tracking_id):
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT id, category, status, created_at, updated_at FROM reports WHERE tracking_id=%s ORDER BY created_at ASC", (tracking_id,))
+    rows = cur.fetchall()
+    cur.close()
+    if not rows:
+        return jsonify({"ok": False, "msg": "No such existing case for that tracking id"}), 404
+        
+    summary = {
+        "tracking_id": tracking_id,
+        "count": len(rows),
+        "status": rows[-1]["status"],
+        "history": [{"id": r["id"], "category": r["category"], "status": r["status"], "created_at": r["created_at"].isoformat()} for r in rows]
+    }
+    return jsonify({"ok": True, "report": summary})
     
 if __name__ == "__main__":
      with app.app_context():
