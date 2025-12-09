@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap');
+#@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap');
 
 :root {
     --nigeria-green: #006940;
@@ -220,7 +220,16 @@ body {
     box-shadow: 0 2px 10px var(--shadow-dark);
     position: static;
 }
-
+.tracking-id-box {
+    background: var(--nigeria-green-light);
+    color: var(--white);
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 4px 15px var(--shadow);
+    margin-top: 1rem;
+}
 .categorywrapper {
     background: var(--white);
     border-radius: 12px;
