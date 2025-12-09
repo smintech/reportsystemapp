@@ -30,6 +30,12 @@
         --color-btn-toggle: #1d4ed8;
         --color-btn-toggle-hover: #1b40c4;
 
+        --color-btn-reports: #10b981;
+        --color-btn-reports-hover: #059669;
+
+        --color-btn-view-reports: #f59e0b;
+        --color-btn-view-reports-hover: #b45309;
+
         --radius: 12px;
         --shadow: 0 8px 20px rgba(0,0,0,0.12);
         --transition: 0.3s ease;
@@ -113,6 +119,30 @@
         transform: scale(1.05);
     }
 
+    .btn-reports {
+        background: var(--color-btn-reports);
+        border: none;
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+
+    .btn-reports:hover {
+        background: var(--color-btn-reports-hover);
+        transform: scale(1.03);
+    }
+
+    .btn-view-reports {
+        background: var(--color-btn-view-reports);
+        border: none;
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+
+    .btn-view-reports:hover {
+        background: var(--color-btn-view-reports-hover);
+        transform: scale(1.03);
+    }
+
     /* ===== TOP NAV BAR ===== */
     .top-actions {
         padding: 20px 30px;
@@ -153,30 +183,29 @@
     }
 
     /* ===== TABLE ===== */
-    .user-table {
+    table {
         width: 100%;
         border-collapse: collapse;
         font-size: 15px;
         min-width: 700px;
     }
 
-    .user-table th,
-    .user-table td {
+    th, td {
         padding: 14px;
         border-bottom: 1px solid #e2e8f0;
         text-align: left;
     }
 
-    .user-table th {
+    th {
         background: var(--color-header);
         color: var(--color-header-text);
     }
 
-    .user-table tr:nth-child(even) td {
+    tr:nth-child(even) td {
         background: var(--color-row-alt);
     }
 
-    .user-table tr:hover td {
+    tr:hover td {
         background: #dbeafe;
         transition: var(--transition);
     }
@@ -191,6 +220,23 @@
         border-radius: 8px;
     }
 
+    /* ===== REPORTS LINK BUTTON ===== */
+    .btn-link {
+        display: inline-block;
+        margin: 10px 0;
+        padding: 8px 16px;
+        background: #f59e0b;
+        color: #fff;
+        text-decoration: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .btn-link:hover {
+        background: #b45309;
+        transform: scale(1.03);
+    }
 </style>
 </head>
 <body>
@@ -206,6 +252,8 @@
         <a href="{{ url_for('admin_logout') }}" class="btn btn-logout">Logout</a>
         <a href="{{ url_for('list_users') }}" class="btn btn-primary">View Users</a>
         <a href="{{ url_for('add_user') }}" class="btn btn-primary">Add New User</a>
+        <a href="{{ url_for('reports_page') }}" class="btn btn-reports">Manage Reports</a>
+        <a href="{{ url_for('reports_page') }}" class="btn btn-view-reports">View All Reports</a>
     </div>
 
     <!-- FLASH MESSAGES -->
@@ -267,6 +315,44 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- RECENT REPORTS PREVIEW -->
+    <div class="card">
+        <h2>Recent Reports</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tracking ID</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Reporter Email</th>
+                        <th>Assigned To</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports[:10] %}  <!-- preview last 10 -->
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.tracking_id }}</td>
+                        <td>{{ r.category }}</td>
+                        <td>{{ r.status }}</td>
+                        <td>{{ r.reporter_email if r.reporter_email else 'Unavailable' }}</td>
+                        <td>{{ r.assigned_staff_id if r.assigned_staff_id else 'Unassigned' }}</td>
+                        <td>{{ r.created_at }}</td>
+                        <td>
+                            <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-link">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('reports_page') }}" class="btn-link">View All Reports</a>
     </div>
 
     <!-- JAVASCRIPT TO TOGGLE DETAILS -->
