@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Report</title>
+<style>
+/* ===== VARIABLES ===== */
+:root {
+    --font-primary: 'Poppins', 'Roboto', sans-serif;
+    --color-bg: #f9fafb;
+    --color-card-bg: #ffffff;
+    --color-text: #1e293b;
+    --color-header: #2563eb;
+    --color-header-text: #ffffff;
+    --color-btn-primary: #2563eb;
+    --color-btn-primary-hover: #1d4ed8;
+    --color-btn-addnote: #10b981;
+    --color-btn-addnote-hover: #059669;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --transition: 0.3s ease;
+}
+
+/* ===== BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-primary);
+}
+
+body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    padding: 2rem;
+    line-height: 1.6;
+}
+
+/* ===== HEADINGS ===== */
+h2 {
+    font-size: 1.8rem;
+    color: var(--color-header);
+    margin-bottom: 1rem;
+}
+
+h3 {
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    color: var(--color-header);
+    border-bottom: 2px solid #c9a227;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: var(--color-card-bg);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+}
+
+.card p {
+    margin-bottom: 0.75rem;
+    word-wrap: break-word;
+}
+
+.card pre {
+    background: #f1f5f9;
+    padding: 1rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin-bottom: 0.75rem;
+    font-family: monospace;
+}
+
+/* ===== INTERNAL NOTES ===== */
+.note {
+    background: #f1f5f9;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* ===== FORMS ===== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+textarea {
+    padding: 0.75rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    border-radius: var(--radius);
+    border: 1px solid #d1d5db;
+    resize: vertical;
+    min-height: 100px;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    background: var(--color-btn-addnote);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+button:hover {
+    background: var(--color-btn-addnote-hover);
+    transform: translateY(-2px);
+}
+
+/* ===== LINKS ===== */
+a.back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    text-decoration: none;
+    color: var(--color-header);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+a.back-link:hover {
+    text-decoration: underline;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1rem;
+    }
+
+    textarea {
+        min-height: 80px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Report ID: {{ report.id }}</h2>
+
+    <p><strong>Tracking ID:</strong> {{ report.tracking_id }}</p>
+    <p><strong>Category:</strong> {{ report.category }}</p>
+    <p><strong>Status:</strong> {{ report.status }}</p>
+    <p><strong>Details:</strong> {{ report.details }}</p>
+
+    <p><strong>Evidence:</strong></p>
+    {% if report.evidence %}
+        <pre>{{ report.evidence }}</pre>
+    {% else %}
+        <p>No evidence submitted.</p>
+    {% endif %}
+
+    <p><strong>Assigned To:</strong> {{ report.assigned_to if report.assigned_to else "Not assigned" }}</p>
+</div>
+
+<div class="card">
+    <h3>Internal Notes</h3>
+    {% for note in notes %}
+        <div class="note">
+            - {{ note.note }} <br>
+            <small>{{ note.created_at }}</small>
+        </div>
+    {% endfor %}
+
+    <form method="post" action="{{ url_for('add_note', rid=report.id) }}">
+        <textarea name="note" placeholder="Add an internal note..." required></textarea>
+        <button type="submit">Add Note</button>
+    </form>
+</div>
+
+<a href="{{ url_for('reports_page') }}" class="back-link">← Back to Reports</a>
+
+</body>
+</html>
