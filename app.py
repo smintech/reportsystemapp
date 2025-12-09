@@ -114,6 +114,7 @@ with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
     """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence))
+    db.commit()
 
 response = make_response(redirect(url_for("home")))
 response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
