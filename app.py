@@ -52,6 +52,15 @@ def init_db():
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS report_notes (
+    id SERIAL PRIMARY KEY,
+    report_id INT NOT NULL,
+    note TEXT NOT NULL,
+    added_by TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
     
     cur.execute("""
     CREATE INDEX IF NOT EXISTS idx_reports_active ON reports (anon_id, fingerprint, reporter_email, status);
@@ -321,6 +330,113 @@ def track_status(tracking_id):
         "history": [{"id": r["id"], "category": r["category"], "status": r["status"], "created_at": r["created_at"].isoformat()} for r in rows]
     }
     return jsonify({"ok": True, "report": summary})
+    
+@app.route("/reports")
+@adminonly
+def reports_page():
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute("SELECT * FROM reports ORDER BY created_at DESC")
+    reports = cur.fetchall()
+
+    cur.execute("SELECT email, role FROM users")
+    users = cur.fetchall()
+
+    cur.close()
+    return render_template("reports.html", reports=reports, users=users)
+    
+@app.post("/assign/<int:rid>")
+@adminonly
+def assign_to_user(rid):
+    user_email = request.form.get("user_email")
+
+    if not user_email:
+        flash("Select a user to assign!", "error")
+        return redirect(url_for("reports_page"))
+
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_email, rid))
+    db.commit()
+    cur.close()
+
+    flash("Report assigned successfully!", "success")
+    return redirect(url_for("reports_page"))
+    
+@app.post("/assign_self/<int:rid>")
+@adminonly
+def assign_to_self(rid):
+    admin_email = session.get("staff_email") or "admin"
+
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (admin_email, rid))
+    db.commit()
+    cur.close()
+
+    flash("You are now assigned to this case!", "success")
+    return redirect(url_for("reports_page"))
+    
+@app.post("/status/<int:rid>")
+def change_status(rid):
+    if not session.get("admin_logged_in") and not session.get("staff_logged_in"):
+        flash("Not authorized!", "error")
+        return redirect(url_for("staff_login"))
+
+    status = request.form.get("status")
+
+    if status not in ["Pending", "In Progress", "Resolved", "Rejected", "Closed"]:
+        flash("Invalid status!", "error")
+        return redirect(url_for("reports_page"))
+
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute("UPDATE reports SET status=%s, updated_at=NOW() WHERE id=%s", (status, rid))
+    db.commit()
+    cur.close()
+
+    flash("Status updated.", "success")
+    return redirect(url_for("reports_page"))
+    
+@app.route("/report/<int:rid>")
+def view_report(rid):
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute("SELECT * FROM reports WHERE id=%s", (rid,))
+    report = cur.fetchone()
+
+    cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
+    notes = cur.fetchall()
+
+    cur.close()
+    return render_template("view_report.html", report=report, notes=notes)
+    
+@app.post("/add_note/<int:rid>")
+def add_note(rid):
+    if not session.get("admin_logged_in") and not session.get("staff_logged_in"):
+        flash("Not authorized!", "error")
+        return redirect(url_for("staff_login"))
+
+    note = request.form.get("note")
+
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute("""
+        INSERT INTO report_notes (report_id, note, added_by)
+        VALUES (%s, %s, %s)
+    """, (rid, note, session.get("staff_email", "admin")))
+
+    db.commit()
+    cur.close()
+
+    flash("Note added.", "success")
+    return redirect(url_for("view_report", rid=rid))
     
 if __name__ == "__main__":
      with app.app_context():
