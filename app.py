@@ -178,11 +178,60 @@ def delete_user(user_id):
     flash("User deleted successfully!", "success")
     return redirect(url_for("admin_dashboard"))
     
+@app.route("/staff_login", methods=["GET", "POST"])
+def staff_login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+        remember = "remember" in request.form
+
+        db = get_db()
+        staff = cur.execute(
+            "SELECT * FROM users WHERE email = ? AND role != 'admin'",
+            (email,)
+        ).fetchone()
+
+        if staff and check_password_hash(staff["password_hash"], password):
+            if remember:
+                session.permanent = True
+            else:
+                session.permanent = False
+            session["staff_logged_in"] = True
+            session["staff_email"] = staff["email"]
+            session["staff_role"] = staff["role"]
+            flash("Welcome, staff!", "success")
+            return redirect(url_for("staff_dashboard"))
+        else:
+            flash("Invalid credentials!", "error")
+
+    return render_template("staff_login.html")
+
+
+@app.route("/staff_dashboard")
+def staff_dashboard():
+    if not session.get("staff_logged_in"):
+        flash("Please log in as staff first!", "error")
+        return redirect(url_for("staff_login"))
+
+    return render_template("staff_dashboard.html",
+                           staff_email=session["staff_email"],
+                           staff_role=session["staff_role"])
+    
 @app.route("/admin_logout")
 def admin_logout():
     session.pop("admin_logged_in", None)
     flash("Logged out successfully.", "success")
     return redirect(url_for("admin_login"))
+    
+role"])
+
+@app.route("/staff_logout")
+def staff_logout():
+    session.pop("staff_logged_in", None)
+    session.pop("staff_email", None)
+    session.pop("staff_role", None)
+    flash("Logged out successfully.", "success")
+    return redirect(url_for("staff_login"))
     
 if __name__ == "__main__":
      with app.app_context():
