@@ -282,8 +282,8 @@ def staff_dashboard():
         reports = cur.fetchall()
         cur.close()
         return render_template("staff_dashboard.html",
-                           staff_email=session["staff_email"],
-                           staff_role=session["staff_role"])
+                           staff_email=session.get("staff_email", "Unknown"),
+                            staff_role=session.get("staff_role", "Staff"),
                             reports=reports)
     
 @app.route("/admin_logout")
