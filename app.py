@@ -68,7 +68,8 @@ def home():
     db = get_db()
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
-    if request.method == "POST":
+    db = get_db()
+with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
     reporter_email = request.form.get("reporter_email") or None
     fingerprint = request.form.get("fingerprint") or None
     category = request.form.get("category", "").strip()
@@ -83,9 +84,8 @@ def home():
     if not anon_id:
         anon_id = "anon_" + str(uuid.uuid4())
 
+    # Check existing active tracking
     active_tracking = None
-
-    # Check for active report by email
     if reporter_email:
         cur.execute("""
             SELECT tracking_id FROM reports
@@ -96,7 +96,6 @@ def home():
         if row:
             active_tracking = row["tracking_id"]
 
-    # If no active email report, check anonymous ID + fingerprint
     if not active_tracking and anon_id and fingerprint:
         cur.execute("""
             SELECT tracking_id FROM reports
@@ -108,22 +107,20 @@ def home():
             active_tracking = row["tracking_id"]
 
     tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
-    title = category
 
-    # Insert new report
+    # Insert the new report
     cur.execute("""
         INSERT INTO reports
         (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
     """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence))
-    db.commit()
 
-    response = make_response(redirect(url_for("home")))
-    response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
-    flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
-    return response
+response = make_response(redirect(url_for("home")))
+response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
+flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
+return response
 
-return render_template("index.html", tracking_id=None)
+return render_template("index.html", tracking_id=tracking_id)
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
