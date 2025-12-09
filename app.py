@@ -151,12 +151,12 @@ def add_user():
         try:
             cur.execute(
                 "INSERT INTO users (email, password_hash, role) VALUES (%s, %s, %s)",
-                (email, hashed, role)
+                (email, hashed_password, role)
             )
             
             db.commit()
             flash("User added successfully!", "success")
-        except IntegrityError:
+        except psycopg2.IntegrityError:
             db.rollback()
             flash("User with this email already exists!", "error")
         return redirect(url_for("admin_dashboard"))
