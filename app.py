@@ -65,6 +65,8 @@ def init_db():
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+    tracking_id = None
+    
     db = get_db()
     with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         if request.method == "POST":
