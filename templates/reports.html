@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports Management</title>
+
+<style>
+/* ===== VARIABLES ===== */
+:root {
+    --font-primary: 'Poppins', 'Roboto', sans-serif;
+    --color-bg: #f9fafb;
+    --color-text: #1e293b;
+    --color-header: #2563eb;
+    --color-header-text: #ffffff;
+    --color-card-bg: #ffffff;
+    --color-row-alt: #f1f5f9;
+    --color-btn-primary: #2563eb;
+    --color-btn-primary-hover: #1d4ed8;
+    --color-btn-update: #10b981;
+    --color-btn-update-hover: #059669;
+    --color-btn-assign: #f59e0b;
+    --color-btn-assign-hover: #d97706;
+    --color-btn-view: #6366f1;
+    --color-btn-view-hover: #4f46e5;
+    --color-border: #d1d5db;
+    --radius: 8px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --transition: 0.3s ease;
+}
+
+/* ===== BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-primary);
+}
+
+body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    line-height: 1.6;
+    padding: 2rem;
+}
+
+/* ===== HEADER ===== */
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-header);
+    margin-bottom: 1rem;
+}
+
+/* ===== FLASH MESSAGES ===== */
+.flash-messages, .flash-messages p {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+}
+
+.flash-success {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.flash-error {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* ===== TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+thead {
+    background: var(--color-header);
+    color: var(--color-header-text);
+}
+
+th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.95rem;
+}
+
+tr:nth-child(even) td {
+    background: var(--color-row-alt);
+}
+
+tr:hover td {
+    background: #dbeafe;
+    transition: var(--transition);
+}
+
+/* ===== BUTTONS ===== */
+button, .btn-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 0.25rem;
+}
+
+button:hover, .btn-link:hover {
+    transform: scale(1.03);
+}
+
+/* Button types */
+.btn-view {
+    background: var(--color-btn-view);
+    color: #fff;
+}
+
+.btn-view:hover {
+    background: var(--color-btn-view-hover);
+}
+
+.btn-assign {
+    background: var(--color-btn-assign);
+    color: #fff;
+}
+
+.btn-assign:hover {
+    background: var(--color-btn-assign-hover);
+}
+
+.btn-update {
+    background: var(--color-btn-update);
+    color: #fff;
+}
+
+.btn-update:hover {
+    background: var(--color-btn-update-hover);
+}
+
+/* ===== SELECTS ===== */
+select {
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    background: #fff;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    margin-right: 0.5rem;
+}
+
+/* ===== FORMS IN TABLE ===== */
+td form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-header);
+    color: #fff;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.back-link:hover {
+    background: var(--color-header-text);
+    color: var(--color-header);
+}
+</style>
+</head>
+<body>
+
+<h1>Reports Management</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <p class="flash-{{ category }}">{{ msg }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tracking ID</th>
+            <th>Category</th>
+            <th>details</th>
+            <th>evidence</th>
+            <th>Status</th>
+            <th>Email</th>
+            <th>Anonymous Sender ID</th>
+            <th>Fingerprint</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+            <th>Assigned To</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in reports %}
+        <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.tracking_id }}</td>
+            <td>{{ r.category }}</td>
+            <td>{{ r.details }}</td>
+            <td>{{ r.evidence }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.reporter_email }}</td>
+            <td>{{ r.anon_id }}</td>
+            <td>{{ r.fingerprint }}</td>
+            <td>{{ r.created_at }}</td>
+            <td>{{ r.updated_at }}</td>
+            <td>{{ r.assigned_staff_id if r.assigned_staff_id else 'Unassigned' }}</td>
+            <td>
+                <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-view btn-link">View</a>
+
+                {% if session.get('admin_logged_in') %}
+                    <form method="post" action="{{ url_for('assign_to_self', rid=r.id) }}">
+                        <button class="btn-assign" type="submit">Assign To Me</button>
+                    </form>
+                {% endif %}
+
+                {% if users %}
+                <form method="post" action="{{ url_for('assign_to_user', rid=r.id) }}">
+                    <select name="user_email">
+                        {% for u in users %}
+                        {% if u.role != 'admin' %}
+                        <option value="{{ u.email }}">{{ u.email }} ({{u.role}})</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <button class="btn-assign" type="submit">Assign</button>
+                </form>
+                {% endif %}
+
+                <form method="post" action="{{ url_for('change_status', rid=r.id) }}">
+                    <select name="status">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                    <button class="btn-update" type="submit">Update</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('admin_dashboard') }}" class="back-link">Back to Dashboard</a>
+
+</body>
+</html>
