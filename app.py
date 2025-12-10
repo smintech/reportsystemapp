@@ -507,7 +507,7 @@ def assign_to_other_staff(rid):
 
     db = get_db()
     cur = db.cursor()
-    cur.execute("UPDATE reports SET assigned_to=%s WHERE id=%s", (user_email, rid))
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_email, rid))
     db.commit()
     cur.close()
     flash("Report assigned successfully!", "success")
