@@ -258,8 +258,14 @@ def admin_dashboard():
     reports = cur.fetchall()
     
     if "," in evidence:
+        files_list = evidence.split(",")
         
     elif evidence.startswith("http"):
+        file_link = evidence
+        
+    else:
+        single_file = evidence
+    # process the single file
         
         for report in reports:
             if report["status"] in ("Resolved", "Rejected"):
@@ -372,11 +378,15 @@ def staff_dashboard():
             for report in reports:
                 if report["status"] in ("Resolved", "Rejected"):
                     delete_expired_files(report["tracking_id"], report["updated_at"], days=30)
-                    
-            if "," in evidence:
-                
-            elif evidence.startswith("http"):
-            
+        if "," in evidence:
+            files_list = evidence.split(",")
+        
+        elif evidence.startswith("http"):
+            file_link = evidence
+        
+        else:
+            single_file = evidence
+    # process the single file
         cur.close()
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
