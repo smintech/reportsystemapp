@@ -457,8 +457,17 @@ def assign_to_user(rid):
 
     db = get_db()
     cur = db.cursor()
+    
+    cur.execute("SELECT id FROM users WHERE email=%s", (user_email,))
+    row = cur.fetchone()
+    if not row:
+        flash("Invalid user!", "error")
+        cur.close()
+        return redirect(url_for("reports_page"))
 
-    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_email, rid))
+    user_id = row[0]
+
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_id, rid))
     db.commit()
     cur.close()
 
@@ -472,8 +481,17 @@ def assign_to_self(rid):
 
     db = get_db()
     cur = db.cursor()
+    
+    cur.execute("SELECT id FROM users WHERE email=%s", (admin_email,))
+    row = cur.fetchone()
+    if not row:
+        flash("Admin not exist!", "error")
+        cur.close()
+        return redirect(url_for("reports_page"))
 
-    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (admin_email, rid))
+    user_id = row[0]
+
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_id, rid))
     db.commit()
     cur.close()
 
