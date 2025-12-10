@@ -158,8 +158,8 @@ def home():
                 response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
                 flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
                 return response
-            
-          return render_template("index.html", tracking_id=tracking_id)
+                
+            return render_template("index.html", tracking_id=tracking_id)
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
