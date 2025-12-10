@@ -86,31 +86,31 @@ def init_db():
 @app.route("/", methods=["GET", "POST"])
 def home():
     tracking_id = None
-    
     db = get_db()
     with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+
         if request.method == "POST":
             reporter_email = request.form.get("reporter_email") or None
             fingerprint = request.form.get("fingerprint") or None
             category = request.form.get("category", "").strip()
             details = request.form.get("details", "").strip()
-            evidence = request.form.get("evidence", "").strip() or None
+            evidence_link = request.form.get("evidence") or None  # link text input
 
             if not category or not details:
                 flash("Category and details are required.", "error")
                 return redirect(url_for("home"))
 
-            # Get or create anon_id cookie
+            # Get anon cookie or create new one
             anon_id = request.cookies.get("anon_id")
             if not anon_id:
                 anon_id = "anon_" + str(uuid.uuid4())
 
-            # Check for existing active tracking
+            # -------- Check for active tracking --------
             active_tracking = None
             if reporter_email:
                 cur.execute("""
                     SELECT tracking_id FROM reports
-                    WHERE reporter_email = %s AND status IN ('Pending', 'In Progress')
+                    WHERE reporter_email = %s AND status IN ('Pending','In Progress')
                     ORDER BY created_at DESC LIMIT 1
                 """, (reporter_email,))
                 row = cur.fetchone()
@@ -120,7 +120,7 @@ def home():
             if not active_tracking and anon_id and fingerprint:
                 cur.execute("""
                     SELECT tracking_id FROM reports
-                    WHERE anon_id = %s AND fingerprint = %s AND status IN ('Pending', 'In Progress')
+                    WHERE anon_id = %s AND fingerprint = %s AND status IN ('Pending','In Progress')
                     ORDER BY created_at DESC LIMIT 1
                 """, (anon_id, fingerprint))
                 row = cur.fetchone()
@@ -128,38 +128,48 @@ def home():
                     active_tracking = row["tracking_id"]
 
             tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
-            
-            if 'fileinput' in request.files:
-                files = request.files.getlist('fileinput')
-                saved_files = []
-                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                report_folder = os.path.join(app.config['UPLOAD_FOLDER'], tracking_id)
+
+            # ------------------- HANDLE FILES -------------------
+            files = request.files.getlist("fileinput")
+            saved_files = []
+
+            if files:
+                report_folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
                 os.makedirs(report_folder, exist_ok=True)
-                
+
                 for file in files:
                     if file and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
-                        path = os.path.join(report_folder, filename)
-                        file.save(path)
+                        filepath = os.path.join(report_folder, filename)
+                        file.save(filepath)
                         saved_files.append(filename)
-                        evidence_str = ",".join(saved_files) if saved_files else None
-                else:
-                    evidence_str = None
-                    
-                cur.execute("""
-                    INSERT INTO reports
-                    (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-                """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence_str))
-                db.commit()
 
-            # Prepare response with cookie
-                response = make_response(redirect(url_for("home")))
-                response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
-                flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
-                return response
-                
-            return render_template("index.html", tracking_id=tracking_id)
+            # Combine file names or use evidence_link
+            if saved_files:
+                evidence_str = ",".join(saved_files)
+            elif evidence_link:
+                evidence_str = evidence_link  # treat as link
+            else:
+                evidence_str = None
+
+            # ------------------- INSERT INTO DB -------------------
+            cur.execute("""
+                INSERT INTO reports
+                (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+            """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence_str))
+
+            db.commit()
+
+            # ------------------- SEND RESPONSE + COOKIE -------------------
+            response = make_response(redirect(url_for("home")))
+            response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
+
+            flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
+            return response
+
+        # ------------------- GET REQUEST -------------------
+        return render_template("index.html", tracking_id=tracking_id)
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
@@ -247,9 +257,13 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    for report in reports:
-        if report["status"] in ("Resolved", "Rejected"):
-            delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
+    if "," in evidence:
+        
+    elif evidence.startswith("http"):
+        
+        for report in reports:
+            if report["status"] in ("Resolved", "Rejected"):
+                delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
     
     cur.close()
     return render_template("admin_dashboard.html", users=users, reports=reports)
@@ -357,7 +371,11 @@ def staff_dashboard():
             
             for report in reports:
                 if report["status"] in ("Resolved", "Rejected"):
-                    delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
+                    delete_expired_files(report["tracking_id"], report["updated_at"], days=30)
+                    
+            if "," in evidence:
+                
+            elif evidence.startswith("http"):
             
         cur.close()
         return render_template("staff_dashboard.html",
