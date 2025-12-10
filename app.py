@@ -394,20 +394,16 @@ def staff_dashboard():
             for report in reports:
                 if report["status"] in ("Resolved", "Rejected"):
                     delete_expired_files(report["tracking_id"], report["updated_at"], days=30)
-        if "," in evidence_str:
-            files_list = evidence_str.split(",")
-        
-        elif evidence_str.startswith("http"):
-            file_link = evidence_str
-        
-        else:
-            single_file = evidence_str
+                    
+                    
+        ev = parse_evidence(report["evidence"])
     # process the single file
         cur.close()
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
                             users=users,
+                             evidence=ev,
                             reports=reports)
     
 @app.route("/admin_logout")
