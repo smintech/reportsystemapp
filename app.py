@@ -2,6 +2,7 @@ from flask import Flask, render_template, g, request, redirect, url_for, session
 from flask import abort
 from flask import send_from_directory
 import os
+import shutil
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -19,10 +20,8 @@ UPLOAD_FOLDER = "uploads/"
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'mp4'}  # Extend as needed
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-    
     
 RATEL_DB_URL = os.getenv("DATABASE_URL")
 def get_db():
@@ -171,6 +170,20 @@ def get_or_create_anon_cookie():
 @app.route("/evidence/<tracking_id>/<filename>")
 def get_evidence(tracking_id, filename):
     return send_from_directory(os.path.join(UPLOAD_FOLDER, tracking_id), filename)
+
+def delete_expired_files(tracking_id, updated_at, days=30):
+    """
+    Deletes uploaded files DAYS after a case is resolved/rejected.
+    updated_at must be a datetime object from DB.
+    """
+    expiry_time = updated_at + timedelta(days=days)
+
+    if datetime.utcnow() > expiry_time:
+        folder = os.path.join(UPLOAD_FOLDER, tracking_id)
+        if os.path.exists(folder):
+            shutil.rmtree(folder)
+            return True
+    return False
     
 def adminonly(f):
     @wraps(f)
@@ -233,6 +246,10 @@ def admin_dashboard():
     users = cur.fetchall()
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
+    
+    for report in reports:
+        if report["status"] in ("Resolved", "Rejected"):
+            delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
     
     cur.close()
     return render_template("admin_dashboard.html", users=users, reports=reports)
@@ -338,11 +355,15 @@ def staff_dashboard():
             cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (email,))
             reports = cur.fetchall()
             
+            for report in reports:
+                if report["status"] in ("Resolved", "Rejected"):
+                    delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
+            
         cur.close()
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
-                             users=users,
+                            users=users,
                             reports=reports)
     
 @app.route("/admin_logout")
