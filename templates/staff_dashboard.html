@@ -268,10 +268,10 @@
 
         <!-- EVIDENCE PREVIEW PANEL (NORMAL STAFF) -->
     <div class="evidence-box">
-            {% for evid in reports %}
+            {% for evidence in reports %}
                 <h4>Uploaded Files:</h4>
                 <ul>
-                    {% for e in evid.parsed_evidence %}
+                    {% for e in evidence.parsed_evidence %}
                         <li>
                             <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=f) }}" target="_blank">
                                 Download {{ f }}
