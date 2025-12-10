@@ -370,6 +370,7 @@ def staff_dashboard():
         return redirect(url_for("staff_login"))
         
     role = session.get("staff_role")
+    user_id = session.get("staff_id")
     email = session.get("staff_email")
         
     db = get_db()
@@ -383,7 +384,7 @@ def staff_dashboard():
             
     else:
         users = None
-        cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (email,))
+        cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (user_id,))
         reports = cur.fetchall()
         
     for r in reports:
@@ -394,7 +395,7 @@ def staff_dashboard():
     cur.close()
         
     return render_template("staff_dashboard.html",
-                            staff_email=session.get("staff_email", "Unknown"),
+                           staff_email=session.get("staff_email", "Unknown"),
                            staff_role=session.get("staff_role", "Staff"),
                            users=users,
                            reports=reports)
