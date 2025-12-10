@@ -532,7 +532,7 @@ def change_status_staff(rid):
     db = get_db()
     cur = db.cursor()
     # Only allow staff to update assigned reports
-    cur.execute("SELECT assigned_to FROM reports WHERE id=%s", (rid,))
+    cur.execute("SELECT assigned_staff_id FROM reports WHERE id=%s", (rid,))
     report = cur.fetchone()
     if not report or report[0] != email:
         flash("You are not assigned to this report!", "error")
@@ -588,9 +588,20 @@ def assign_to_self_staff(rid):
         return redirect(url_for("staff_login"))
 
     email = session.get("staff_email")
+    
     db = get_db()
     cur = db.cursor()
-    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (email, rid))
+    
+    cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+    row = cur.fetchone()
+    if not row:
+        flash("Staff not exist!", "error")
+        cur.close()
+        return redirect(url_for("reports_page"))
+
+    user_id = row[0]
+
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_id, rid))
     db.commit()
     cur.close()
     flash("You are now assigned to this report!", "success")
@@ -609,7 +620,17 @@ def assign_to_other_staff(rid):
 
     db = get_db()
     cur = db.cursor()
-    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_email, rid))
+    
+    cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+    row = cur.fetchone()
+    if not row:
+        flash("Staff not exist!", "error")
+        cur.close()
+        return redirect(url_for("reports_page"))
+
+    user_id = row[0]
+    
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (user_id, rid))
     db.commit()
     cur.close()
     flash("Report assigned successfully!", "success")
