@@ -1,7 +1,9 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session , flash, jsonify, make_response
 from flask import abort
+from flask import send_from_directory
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import timedelta
 import secrets
@@ -13,6 +15,15 @@ import hashlib
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
+UPLOAD_FOLDER = "uploads/"
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'mp4'}  # Extend as needed
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+    
 RATEL_DB_URL = os.getenv("DATABASE_URL")
 def get_db():
     if "db" not in g:
@@ -118,29 +129,48 @@ def home():
                     active_tracking = row["tracking_id"]
 
             tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
-
+            
+            if 'fileinput' in request.files:
+                files = request.files.getlist('fileinput')
+                saved_files = []
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                report_folder = os.path.join(app.config['UPLOAD_FOLDER'], tracking_id)
+                os.makedirs(report_folder, exist_ok=True)
+                
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        path = os.path.join(report_folder, filename)
+                        file.save(path)
+                        saved_files.append(filename)
+                        evidence_str = ",".join(saved_files) if saved_files else None
+                else:
+                    evidence_str = None
             # Insert new report
-            cur.execute("""
-                INSERT INTO reports
-                (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence))
-            db.commit()
+               cur.execute("""
+                   INSERT INTO reports
+                   (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+               """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence_str))
+               db.commit()
 
             # Prepare response with cookie
-            response = make_response(redirect(url_for("home")))
-            response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
-            flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
-            return response
-
-    # GET request
-    return render_template("index.html", tracking_id=tracking_id)
+              response = make_response(redirect(url_for("home")))
+              response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
+              flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
+              return response
+            
+        return render_template("index.html", tracking_id=tracking_id)
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
     if not anon_id:
         anon_id = "anon_" + str(uuid.uuid4())
     return anon_id
+    
+@app.route("/evidence/<tracking_id>/<filename>")
+def get_evidence(tracking_id, filename):
+    return send_from_directory(os.path.join(UPLOAD_FOLDER, tracking_id), filename)
     
 def adminonly(f):
     @wraps(f)
