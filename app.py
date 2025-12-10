@@ -278,14 +278,16 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    ev = parse_evidence(reports["evidence"])
+    for evid in reports:
+        ev = parse_evidence(evid["evidence_value"])
+    
     
     for report in reports:
         if report["status"] in ("Resolved", "Rejected"):
             delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
     
     cur.close()
-    return render_template("admin_dashboard.html", users=users, reports=reports, evidence=ev)
+    return render_template("admin_dashboard.html", users=users, reports=reports, evidence_value=ev)
     
 @app.route("/users")
 @adminonly
@@ -392,15 +394,15 @@ def staff_dashboard():
                 if report["status"] in ("Resolved", "Rejected"):
                     delete_expired_files(report["tracking_id"], report["updated_at"], days=30)
                     
-                    
-        ev = parse_evidence(reports["evidence"])
-    # process the single file
+        for evid in reports:
+            ev = parse_evidence(evid["evidence_value"])
+        
         cur.close()
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
                             users=users,
-                            evidence=ev,
+                            evidence_value=ev,
                             reports=reports)
     
 @app.route("/admin_logout")
