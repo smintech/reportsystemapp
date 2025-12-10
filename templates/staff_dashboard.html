@@ -1,99 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Staff Dashboard</title>
-    <style>
-        /* ===== VARIABLES ===== */
-        :root {
-            --nigeria-green: #006940;
-            --nigeria-green-dark: #004d30;
-            --nigeria-green-light: #008751;
-            --white: #ffffff;
-            --off-white: #f8f9fa;
-            --light-gray: #e0e0e0;
-            --text-dark: #1a1a1a;
-            --text-gray: #333333;
-            --accent-gold: #c9a227;
-            --shadow: rgba(0, 105, 64, 0.15);
-            --shadow-dark: rgba(0, 0, 0, 0.25);
-            --radius: 12px;
-            --padding: 20px;
-            --font-primary: "Inter", Arial, sans-serif;
-            --transition: 0.3s ease;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Dashboard</title>
+<style>
+    /* ===== VARIABLES ===== */
+    :root {
+        --nigeria-green: #006940;
+        --nigeria-green-dark: #004d30;
+        --nigeria-green-light: #008751;
+        --white: #ffffff;
+        --off-white: #f8f9fa;
+        --light-gray: #e0e0e0;
+        --text-dark: #1a1a1a;
+        --text-gray: #333333;
+        --accent-gold: #c9a227;
+        --shadow: rgba(0, 105, 64, 0.15);
+        --shadow-dark: rgba(0, 0, 0, 0.25);
+        --radius: 12px;
+        --padding: 20px;
+        --font-primary: "Inter", Arial, sans-serif;
+        --transition: 0.3s ease;
+    }
 
-        /* ===== BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font-primary);
-        }
+    /* ===== BASE ===== */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: var(--font-primary);
+    }
 
-        body {
-            background: var(--off-white);
-            color: var(--text-dark);
-        }
+    body {
+        background: var(--off-white);
+        color: var(--text-dark);
+    }
 
-        /* ===== DASHBOARD HEADER ===== */
-        .dashboard-header {
-            width: 100%;
-            background: var(--nigeria-green);
-            color: var(--white);
-            padding: 30px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 10px var(--shadow-dark);
-            min-height: 120px;
-        }
+    /* ===== DASHBOARD HEADER ===== */
+    .dashboard-header {
+        width: 100%;
+        background: var(--nigeria-green);
+        color: var(--white);
+        padding: 30px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 10px var(--shadow-dark);
+        min-height: 120px;
+    }
 
-        .dashboard-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
+    .dashboard-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
 
-        .btn-logout {
-            padding: 12px 22px;
-            background: var(--accent-gold);
-            color: var(--white);
-            text-decoration: none;
-            border-radius: var(--radius);
-            font-weight: 600;
-            transition: background var(--transition), transform var(--transition);
-        }
+    .btn-logout {
+        padding: 12px 22px;
+        background: var(--accent-gold);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        transition: background var(--transition), transform var(--transition);
+    }
 
-        .btn-logout:hover {
-            background: #b5931f; /* slightly darker gold */
-            transform: scale(1.05);
-        }
+    .btn-logout:hover {
+        background: #b5931f;
+        transform: scale(1.05);
+    }
 
-        /* ===== MAIN CONTENT ===== */
-        .dashboard-content {
-            padding: 30px 40px;
-        }
+    /* ===== DASHBOARD CONTENT ===== */
+    .dashboard-content {
+        padding: 30px 40px;
+    }
 
-        .dashboard-content p {
-            font-size: 1.1rem;
-            color: var(--text-gray);
-        }
+    .dashboard-content h2 {
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: var(--nigeria-green-dark);
+    }
 
-    </style>
+    /* ===== TABLE ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin-bottom: 25px;
+        min-width: 700px;
+    }
+
+    th, td {
+        padding: 12px 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    th {
+        background: var(--nigeria-green);
+        color: var(--white);
+    }
+
+    tr:nth-child(even) td {
+        background: var(--nigeria-green-light);
+        color: var(--white);
+    }
+
+    tr:hover td {
+        background: #00a14f;
+        color: var(--white);
+        transition: var(--transition);
+    }
+
+    /* ===== BUTTONS INSIDE TABLE ===== */
+    .btn-table {
+        padding: 6px 12px;
+        border-radius: var(--radius);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 2px 0;
+        transition: var(--transition);
+    }
+
+    .btn-view { background: #2563eb; }
+    .btn-view:hover { background: #1d4ed8; transform: scale(1.03); }
+
+    .btn-assign { background: #10b981; }
+    .btn-assign:hover { background: #059669; transform: scale(1.03); }
+
+    .btn-status { background: #f59e0b; }
+    .btn-status:hover { background: #b45309; transform: scale(1.03); }
+
+    select {
+        padding: 5px 8px;
+        border-radius: var(--radius);
+        border: 1px solid #ccc;
+        margin-right: 5px;
+    }
+
+    form { display: inline; }
+</style>
 </head>
 <body>
 
-    <!-- FULL-WIDTH DASHBOARD HEADER -->
-    <div class="dashboard-header">
-        <h2>Welcome, {{ staff_email }}</h2>
-        <a href="{{ url_for('staff_logout') }}" class="btn-logout">Logout</a>
-    </div>
+<!-- DASHBOARD HEADER -->
+<div class="dashboard-header">
+    <h2>Welcome, {{ staff_email }}</h2>
+    <a href="{{ url_for('staff_logout') }}" class="btn-logout">Logout</a>
+</div>
 
-    <!-- MAIN CONTENT -->
-    <div class="dashboard-content">
-        <p>Role: {{ staff_role }}</p>
-        <!-- You can add more dashboard widgets here -->
-    </div>
+<!-- DASHBOARD CONTENT -->
+<div class="dashboard-content">
+    <p>Role: {{ staff_role }}</p>
+
+    {% if staff_role == 'vdmratelking' %}
+        <h2>All Users (Read-only)</h2>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.role }}</td>
+                    <td>{{ u.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <h2>All Reports</h2>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tracking ID</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.tracking_id }}</td>
+                    <td>{{ r.category }}</td>
+                    <td>{{ r.status }}</td>
+                    <td>{{ r.assigned_to if r.assigned_to else 'Unassigned' }}</td>
+                    <td>
+                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
+                        <form method="post" action="{{ url_for('assign_to_self_staff', rid=r.id) }}">
+                            <button type="submit" class="btn-table btn-assign">Assign To Me</button>
+                        </form>
+                        <form method="post" action="{{ url_for('assign_to_other_staff', rid=r.id) }}">
+                            <select name="user_email">
+                                {% for u in users %}
+                                {% if u.role != 'admin' %}
+                                    <option value="{{ u.email }}">{{ u.email }} ({{ u.role }})</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn-table btn-assign">Assign Other Staff</button>
+                        </form>
+                        <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
+                            <select name="status">
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                            <button type="submit" class="btn-table btn-status">Update Status</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+    {% else %}
+        <h2>My Assigned Reports</h2>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tracking ID</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.tracking_id }}</td>
+                    <td>{{ r.category }}</td>
+                    <td>{{ r.status }}</td>
+                    <td>
+                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
+                        <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
+                            <select name="status">
+                                <option value="Pending" {% if r.status=='Pending' %}selected{% endif %}>Pending</option>
+                                <option value="In Progress" {% if r.status=='In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Resolved" {% if r.status=='Resolved' %}selected{% endif %}>Resolved</option>
+                                <option value="Rejected" {% if r.status=='Rejected' %}selected{% endif %}>Rejected</option>
+                                <option value="Closed" {% if r.status=='Closed' %}selected{% endif %}>Closed</option>
+                            </select>
+                            <button type="submit" class="btn-table btn-status">Update Status</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% endif %}
+</div>
 
 </body>
 </html>
