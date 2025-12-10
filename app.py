@@ -372,7 +372,7 @@ def staff_dashboard():
         role = session.get("staff_role")
         email = session.get("staff_email")
         
-        db = get_db
+        db = get_db()
         cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         if role == "vdmratelking":
@@ -392,6 +392,7 @@ def staff_dashboard():
                 delete_expired_files(r["tracking_id"], r["updated_at"], days=30)
                         
         cur.close()
+        
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
