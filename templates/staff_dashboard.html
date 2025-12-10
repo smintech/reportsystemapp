@@ -265,22 +265,35 @@
         </div>
 
         <!-- EVIDENCE PREVIEW PANEL (NORMAL STAFF) -->
-        <div class="evidence-box">
-            <h3 style="margin-bottom:10px; color:var(--nigeria-green-dark);">Evidence Files</h3>
+    <div class="evidence-box">
+            {% if evidence.files %}
+                <h4>Uploaded Files:</h4>
+                <ul>
+                    {% for f in evidence.files %}
+                        <li>
+                            <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=f) }}" target="_blank">
+                                Download {{ f }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-            {% if r.evidence %}
-                {% for file in r.evidence.split(',') %}
-                    <div class="evidence-item">
-                        <a href="/evidence/{{ r.tracking_id }}/{{ file }}" target="_blank">
-                            {{ file }}
-                        </a>
-                    </div>
-                {% endfor %}
+            {% elif evidence.single %}
+                <h4>Uploaded File:</h4>
+                <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=evidence.single) }}" target="_blank">
+                    Download {{ evidence.single }}
+                </a>
+
+            {% elif evidence.link %}
+                <h4>Evidence Link:</h4>
+                <a href="{{ evidence.link }}" target="_blank">
+                    {{ evidence.link }}
+                </a>
+
             {% else %}
-                <p style="color:var(--text-gray); font-weight:600;">No file uploaded</p>
+                <p>No evidence submitted.</p>
             {% endif %}
-        </div>
-
+    </div>
     {% endif %}
 </div>
 
