@@ -1,6 +1,4 @@
-from flask import Flask, render_template, g, request, redirect, url_for, session , flash, jsonify, make_response
-from flask import abort
-from flask import send_from_directory
+from flask import Flask, render_template, g, request, redirect, url_for, session , flash, jsonify, make_response, send_from_directory, abort
 import os
 import shutil
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -278,16 +276,14 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    for evidence in reports:
-        evidence = parse_evidence(evid["evidence_value"])
     
-    
-    for report in reports:
-        if report["status"] in ("Resolved", "Rejected"):
-            delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
+    for r in reports:
+        r['evidence_parsed'] = parse_evidence(r['evidence'])
+        if r["status"] in ("Resolved","Rejected"):
+            delete_expired_files(r["tracking_id"], r["updated_at"], days=30)  
     
     cur.close()
-    return render_template("admin_dashboard.html", users=users, reports=reports, evidence_value=evidence)
+    return render_template("admin_dashboard.html", users=users, reports=reports)
     
 @app.route("/users")
 @adminonly
@@ -389,20 +385,17 @@ def staff_dashboard():
             users = None
             cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (email,))
             reports = cur.fetchall()
-            
-            for report in reports:
-                if report["status"] in ("Resolved", "Rejected"):
-                    delete_expired_files(report["tracking_id"], report["updated_at"], days=30)
-                    
-        for evidence in reports:
-            evidence = parse_evidence(evidence["evidence_value"])
         
+        for r in reports:
+            r['evidence_parsed'] = parse_evidence(r['evidence'])
+            if r["status"] in ("Resolved","Rejected"):
+                delete_expired_files(r["tracking_id"], r["updated_at"], days=30)
+                        
         cur.close()
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
                             users=users,
-                            evidence_value=evidence,
                             reports=reports)
     
 @app.route("/admin_logout")
