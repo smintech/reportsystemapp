@@ -271,7 +271,7 @@
             {% for evid in reports %}
                 <h4>Uploaded Files:</h4>
                 <ul>
-                    {% for e in report.parsed_evidence %}
+                    {% for e in evid.parsed_evidence %}
                         <li>
                             <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=f) }}" target="_blank">
                                 Download {{ f }}
