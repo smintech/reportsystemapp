@@ -257,14 +257,14 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    if "," in evidence:
-        files_list = evidence.split(",")
+    if "," in evidence_str:
+        files_list = evidence_str.split(",")
         
     elif evidence.startswith("http"):
-        file_link = evidence
+        file_link = evidence_str
         
     else:
-        single_file = evidence
+        single_file = evidence_str
     # process the single file
         
         for report in reports:
