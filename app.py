@@ -369,35 +369,35 @@ def staff_dashboard():
         flash("Please log in as staff first!", "error")
         return redirect(url_for("staff_login"))
         
-        role = session.get("staff_role")
-        email = session.get("staff_email")
+    role = session.get("staff_role")
+    email = session.get("staff_email")
         
-        db = get_db()
-        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        if role == "vdmratelking":
-            cur.execute("SELECT * FROM users ORDER BY id ASC")
-            users = cur.fetchall()
-            cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
-            reports = cur.fetchall()
+    if role == "vdmratelking":
+        cur.execute("SELECT * FROM users ORDER BY id ASC")
+        users = cur.fetchall()
+        cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
+        reports = cur.fetchall()
             
-        else:
-            users = None
-            cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (email,))
-            reports = cur.fetchall()
+    else:
+        users = None
+        cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (email,))
+        reports = cur.fetchall()
         
-        for r in reports:
-            r['evidence_parsed'] = parse_evidence(r['evidence'])
-            if r["status"] in ("Resolved","Rejected"):
-                delete_expired_files(r["tracking_id"], r["updated_at"], days=30)
+    for r in reports:
+        r['evidence_parsed'] = parse_evidence(r['evidence'])
+        if r["status"] in ("Resolved","Rejected"):
+            delete_expired_files(r["tracking_id"], r["updated_at"], days=30)
                         
-        cur.close()
+    cur.close()
         
-        return render_template("staff_dashboard.html",
+    return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
-                            staff_role=session.get("staff_role", "Staff"),
-                            users=users,
-                            reports=reports)
+                           staff_role=session.get("staff_role", "Staff"),
+                           users=users,
+                           reports=reports)
     
 @app.route("/admin_logout")
 def admin_logout():
