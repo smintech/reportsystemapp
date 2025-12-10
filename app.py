@@ -147,10 +147,10 @@ def home():
             # Combine file names or use evidence_link
             if saved_files:
                 evidence_str = ",".join(saved_files)
-            elif evidence_link:
+            elif evidence_str:
                 evidence_str = evidence_link  # treat as link
             else:
-                evidence_str = None
+                evidence_link = None
 
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
@@ -257,7 +257,7 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    if "," in evidence_str:
+    if "," in saved_file:
         files_list = evidence_str.split(",")
         
     elif evidence_str.startswith("http"):
