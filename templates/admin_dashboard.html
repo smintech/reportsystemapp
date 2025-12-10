@@ -302,7 +302,7 @@
             {% for evid in reports %}
                 <h4>Uploaded Files:</h4>
                 <ul>
-                    {% for f in evidence.files %}
+                    {% for e in reports %}
                         <li>
                             <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=f) }}" target="_blank">
                                 Download {{ f }}
