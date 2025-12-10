@@ -207,15 +207,12 @@ def parse_evidence(evidence_value):
     """
     if not evidence_value:
         return {"files": None, "link": None, "single": None}
-
     # Case 1 → Comma-separated uploaded files
     if "," in evidence_value:
         return {"files": evidence_value.split(","), "link": None, "single": None}
-
     # Case 2 → External link
     if evidence_value.startswith("http"):
         return {"files": None, "link": evidence_value, "single": None}
-
     # Case 3 → One uploaded file
     return {"files": None, "link": None, "single": evidence_value}
     
@@ -281,7 +278,7 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    ev = parse_evidence(report["evidence"])
+    ev = parse_evidence(reports["evidence"])
     
     for report in reports:
         if report["status"] in ("Resolved", "Rejected"):
@@ -396,14 +393,14 @@ def staff_dashboard():
                     delete_expired_files(report["tracking_id"], report["updated_at"], days=30)
                     
                     
-        ev = parse_evidence(report["evidence"])
+        ev = parse_evidence(reports["evidence"])
     # process the single file
         cur.close()
         return render_template("staff_dashboard.html",
                             staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
                             users=users,
-                             evidence=ev,
+                            evidence=ev,
                             reports=reports)
     
 @app.route("/admin_logout")
