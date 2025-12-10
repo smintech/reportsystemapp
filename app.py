@@ -130,8 +130,10 @@ def home():
             tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
 
             # ------------------- HANDLE FILES -------------------
+            # --- FILE UPLOAD ---
             files = request.files.getlist("fileinput")
             saved_files = []
+            evidence_str = None
 
             if files:
                 report_folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
@@ -147,10 +149,10 @@ def home():
             # Combine file names or use evidence_link
             if saved_files:
                 evidence_str = ",".join(saved_files)
-            elif evidence_str:
+            elif evidence_link:
                 evidence_str = evidence_link  # treat as link
             else:
-                evidence_link = None
+                evidence_str = None
 
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
@@ -194,6 +196,28 @@ def delete_expired_files(tracking_id, updated_at, days=30):
             shutil.rmtree(folder)
             return True
     return False
+    
+def parse_evidence(evidence_value):
+    """
+    Returns a dict containing:
+      files → list of filenames
+      link → URL string
+      single → single filename
+    Everything else is None.
+    """
+    if not evidence_value:
+        return {"files": None, "link": None, "single": None}
+
+    # Case 1 → Comma-separated uploaded files
+    if "," in evidence_value:
+        return {"files": evidence_value.split(","), "link": None, "single": None}
+
+    # Case 2 → External link
+    if evidence_value.startswith("http"):
+        return {"files": None, "link": evidence_value, "single": None}
+
+    # Case 3 → One uploaded file
+    return {"files": None, "link": None, "single": evidence_value}
     
 def adminonly(f):
     @wraps(f)
@@ -257,22 +281,14 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    if "," in saved_file:
-        files_list = evidence_str.split(",")
-        
-    elif evidence_str.startswith("http"):
-        file_link = evidence_str
-        
-    else:
-        single_file = evidence_str
-    # process the single file
-        
-        for report in reports:
-            if report["status"] in ("Resolved", "Rejected"):
-                delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
+    ev = parse_evidence(report["evidence"])
+    
+    for report in reports:
+        if report["status"] in ("Resolved", "Rejected"):
+            delete_expired_files(report["tracking_id"], report["updated_at"], days=30)  
     
     cur.close()
-    return render_template("admin_dashboard.html", users=users, reports=reports)
+    return render_template("admin_dashboard.html", users=users, reports=reports, evidence=ev)
     
 @app.route("/users")
 @adminonly
