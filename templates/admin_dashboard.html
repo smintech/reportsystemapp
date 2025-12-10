@@ -299,19 +299,34 @@
 
     <!-- ===== EVIDENCE PREVIEW SECTION ===== -->
     <div class="evidence-box">
-        <h3 style="margin-bottom:10px;">Evidence Files</h3>
+            {% if evidence.files %}
+                <h4>Uploaded Files:</h4>
+                <ul>
+                    {% for f in evidence.files %}
+                        <li>
+                            <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=f) }}" target="_blank">
+                                Download {{ f }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-        {% if reports and reports[0].evidence %}
-            {% for file in reports[0].evidence.split(',') %}
-                <a href="/evidence/{{ reports[0].tracking_id }}/{{ file }}" target="_blank">
-                    {{ file }}
-                </a><br>
-            {% endfor %}
-        {% else %}
-            <p>No file uploaded</p>
-        {% endif %}
+            {% elif evidence.single %}
+                <h4>Uploaded File:</h4>
+                <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=evidence.single) }}" target="_blank">
+                    Download {{ evidence.single }}
+                </a>
+
+            {% elif evidence.link %}
+                <h4>Evidence Link:</h4>
+                <a href="{{ evidence.link }}" target="_blank">
+                    {{ evidence.link }}
+                </a>
+
+            {% else %}
+                <p>No evidence submitted.</p>
+            {% endif %}
     </div>
-
 </div>
 
 <script>
