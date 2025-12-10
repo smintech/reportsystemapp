@@ -25,17 +25,9 @@
     }
 
     /* ===== BASE ===== */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: var(--font-primary);
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-primary); }
 
-    body {
-        background: var(--off-white);
-        color: var(--text-dark);
-    }
+    body { background: var(--off-white); color: var(--text-dark); }
 
     /* ===== DASHBOARD HEADER ===== */
     .dashboard-header {
@@ -50,10 +42,7 @@
         min-height: 120px;
     }
 
-    .dashboard-header h2 {
-        font-size: 1.8rem;
-        font-weight: 700;
-    }
+    .dashboard-header h2 { font-size: 1.8rem; font-weight: 700; }
 
     .btn-logout {
         padding: 12px 22px;
@@ -62,18 +51,12 @@
         text-decoration: none;
         border-radius: var(--radius);
         font-weight: 600;
-        transition: background var(--transition), transform var(--transition);
+        transition: var(--transition);
     }
+    .btn-logout:hover { background: #b5931f; transform: scale(1.05); }
 
-    .btn-logout:hover {
-        background: #b5931f;
-        transform: scale(1.05);
-    }
-
-    /* ===== DASHBOARD CONTENT ===== */
-    .dashboard-content {
-        padding: 30px 40px;
-    }
+    /* ===== CONTENT ===== */
+    .dashboard-content { padding: 30px 40px; }
 
     .dashboard-content h2 {
         margin-top: 20px;
@@ -89,30 +72,17 @@
         margin-bottom: 25px;
         min-width: 700px;
     }
-
     th, td {
         padding: 12px 10px;
         text-align: left;
         border-bottom: 1px solid var(--light-gray);
     }
+    th { background: var(--nigeria-green); color: var(--white); }
 
-    th {
-        background: var(--nigeria-green);
-        color: var(--white);
-    }
+    tr:nth-child(even) td { background: var(--nigeria-green-light); color: var(--white); }
+    tr:hover td { background: #00a14f; color: var(--white); transition: var(--transition); }
 
-    tr:nth-child(even) td {
-        background: var(--nigeria-green-light);
-        color: var(--white);
-    }
-
-    tr:hover td {
-        background: #00a14f;
-        color: var(--white);
-        transition: var(--transition);
-    }
-
-    /* ===== BUTTONS INSIDE TABLE ===== */
+    /* ===== BUTTONS ===== */
     .btn-table {
         padding: 6px 12px;
         border-radius: var(--radius);
@@ -141,136 +111,176 @@
     }
 
     form { display: inline; }
+
+    /* ===== EVIDENCE PREVIEW PANEL ===== */
+    .evidence-box {
+        background: var(--white);
+        padding: 20px;
+        margin-top: 25px;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 10px var(--shadow);
+        border-left: 5px solid var(--nigeria-green);
+    }
+
+    .evidence-item {
+        padding: 8px 0;
+        font-weight: 600;
+        color: var(--nigeria-green-dark);
+    }
+
+    .evidence-item a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .evidence-item a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 
-<!-- DASHBOARD HEADER -->
+<!-- HEADER -->
 <div class="dashboard-header">
     <h2>Welcome, {{ staff_email }}</h2>
     <a href="{{ url_for('staff_logout') }}" class="btn-logout">Logout</a>
 </div>
 
-<!-- DASHBOARD CONTENT -->
+<!-- CONTENT -->
 <div class="dashboard-content">
     <p>Role: {{ staff_role }}</p>
 
     {% if staff_role == 'vdmratelking' %}
-        <h2>All Users (Read-only)</h2>
+
+        <!-- USERS TABLE -->
+        <h2>All Users</h2>
         <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                <tr>
-                    <td>{{ u.id }}</td>
-                    <td>{{ u.email }}</td>
-                    <td>{{ u.role }}</td>
-                    <td>{{ u.created_at }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Email</th><th>Role</th><th>Created At</th></tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.role }}</td>
+                        <td>{{ u.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
+        <!-- REPORTS TABLE -->
         <h2>All Reports</h2>
         <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tracking ID</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Assigned To</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in reports %}
-                <tr>
-                    <td>{{ r.id }}</td>
-                    <td>{{ r.tracking_id }}</td>
-                    <td>{{ r.category }}</td>
-                    <td>{{ r.status }}</td>
-                    <td>{{ r.assigned_to if r.assigned_to else 'Unassigned' }}</td>
-                    <td>
-                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
-                        <form method="post" action="{{ url_for('assign_to_self_staff', rid=r.id) }}">
-                            <button type="submit" class="btn-table btn-assign">Assign To Me</button>
-                        </form>
-                        <form method="post" action="{{ url_for('assign_to_other_staff', rid=r.id) }}">
-                            <select name="user_email">
-                                {% for u in users %}
-                                {% if u.role != 'admin' %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Tracking ID</th><th>Category</th>
+                        <th>Status</th><th>Assigned To</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.tracking_id }}</td>
+                        <td>{{ r.category }}</td>
+                        <td>{{ r.status }}</td>
+                        <td>{{ r.assigned_staff_id if r.assigned_staff_id else 'Unassigned' }}</td>
+                        <td>
+                            <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
+
+                            <form method="post" action="{{ url_for('assign_to_self_staff', rid=r.id) }}">
+                                <button type="submit" class="btn-table btn-assign">Assign To Me</button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('assign_to_other_staff', rid=r.id) }}">
+                                <select name="user_email">
+                                    {% for u in users %}
+                                    {% if u.role != 'vdmratelking' %}
                                     <option value="{{ u.email }}">{{ u.email }} ({{ u.role }})</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="btn-table btn-assign">Assign Other Staff</button>
-                        </form>
-                        <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
-                            <select name="status">
-                                <option value="Pending">Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Resolved">Resolved</option>
-                                <option value="Rejected">Rejected</option>
-                                <option value="Closed">Closed</option>
-                            </select>
-                            <button type="submit" class="btn-table btn-status">Update Status</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn-table btn-assign">Assign To Other Staff</button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
+                                <select name="status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Resolved">Resolved</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                                <button type="submit" class="btn-table btn-status">Update Status</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+        
 
     {% else %}
+
+        <!-- STAFF ASSIGNED REPORTS -->
         <h2>My Assigned Reports</h2>
         <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tracking ID</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in reports %}
-                <tr>
-                    <td>{{ r.id }}</td>
-                    <td>{{ r.tracking_id }}</td>
-                    <td>{{ r.category }}</td>
-                    <td>{{ r.status }}</td>
-                    <td>
-                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
-                        <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
-                            <select name="status">
-                                <option value="Pending" {% if r.status=='Pending' %}selected{% endif %}>Pending</option>
-                                <option value="In Progress" {% if r.status=='In Progress' %}selected{% endif %}>In Progress</option>
-                                <option value="Resolved" {% if r.status=='Resolved' %}selected{% endif %}>Resolved</option>
-                                <option value="Rejected" {% if r.status=='Rejected' %}selected{% endif %}>Rejected</option>
-                                <option value="Closed" {% if r.status=='Closed' %}selected{% endif %}>Closed</option>
-                            </select>
-                            <button type="submit" class="btn-table btn-status">Update Status</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Tracking ID</th>
+                        <th>Category</th><th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.tracking_id }}</td>
+                        <td>{{ r.category }}</td>
+                        <td>{{ r.status }}</td>
+                        <td>
+                            <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
+
+                            <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
+                                <select name="status">
+                                    <option value="Pending" {% if r.status=='Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="In Progress" {% if r.status=='In Progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="Resolved" {% if r.status=='Resolved' %}selected{% endif %}>Resolved</option>
+                                    <option value="Rejected" {% if r.status=='Rejected' %}selected{% endif %}>Rejected</option>
+                                    <option value="Closed" {% if r.status=='Closed' %}selected{% endif %}>Closed</option>
+                                </select>
+                                <button type="submit" class="btn-table btn-status">Update Status</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
+        <!-- EVIDENCE PREVIEW PANEL (NORMAL STAFF) -->
+        <div class="evidence-box">
+            <h3 style="margin-bottom:10px; color:var(--nigeria-green-dark);">Evidence Files</h3>
+
+            {% if r.evidence %}
+                {% for file in r.evidence.split(',') %}
+                    <div class="evidence-item">
+                        <a href="/evidence/{{ r.tracking_id }}/{{ file }}" target="_blank">
+                            {{ file }}
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:var(--text-gray); font-weight:600;">No file uploaded</p>
+            {% endif %}
+        </div>
+
     {% endif %}
 </div>
 
