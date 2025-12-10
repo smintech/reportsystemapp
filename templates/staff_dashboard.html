@@ -199,7 +199,7 @@
                             <form method="post" action="{{ url_for('assign_to_other_staff', rid=r.id) }}">
                                 <select name="user_email">
                                     {% for u in users %}
-                                    {% if u.role != 'vdmratelking' %}
+                                    {% if u.role != 'admin' %}
                                     <option value="{{ u.email }}">{{ u.email }} ({{ u.role }})</option>
                                     {% endif %}
                                     {% endfor %}
