@@ -145,21 +145,21 @@ def home():
                         evidence_str = ",".join(saved_files) if saved_files else None
                 else:
                     evidence_str = None
-            # Insert new report
-               cur.execute("""
-                   INSERT INTO reports
-                   (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-               """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence_str))
-               db.commit()
+                    
+                cur.execute("""
+                    INSERT INTO reports
+                    (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+                """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence_str))
+                db.commit()
 
             # Prepare response with cookie
-              response = make_response(redirect(url_for("home")))
-              response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
-              flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
-              return response
+                response = make_response(redirect(url_for("home")))
+                response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
+                flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
+                return response
             
-        return render_template("index.html", tracking_id=tracking_id)
+          return render_template("index.html", tracking_id=tracking_id)
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
