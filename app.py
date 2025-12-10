@@ -1,4 +1,5 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session , flash, jsonify, make_response
+from flask import abort
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -290,14 +291,28 @@ def staff_dashboard():
         flash("Please log in as staff first!", "error")
         return redirect(url_for("staff_login"))
         
+        role = session.get("staff_role")
+        email = session.get("staff_email")
+        
         db = get_db
         cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 200")
-        reports = cur.fetchall()
+        
+        if role == "vdmratelking":
+            cur.execute("SELECT * FROM users ORDER BY id ASC")
+            users = cur.fetchall()
+            cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
+            reports = cur.fetchall()
+            
+        else:
+            users = None
+            cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (email,))
+            reports = cur.fetchall()
+            
         cur.close()
         return render_template("staff_dashboard.html",
-                           staff_email=session.get("staff_email", "Unknown"),
+                            staff_email=session.get("staff_email", "Unknown"),
                             staff_role=session.get("staff_role", "Staff"),
+                             users=users,
                             reports=reports)
     
 @app.route("/admin_logout")
@@ -403,6 +418,31 @@ def change_status(rid):
     flash("Status updated.", "success")
     return redirect(url_for("reports_page"))
     
+@app.post("/staff_change_status/<int:rid>")
+def change_status_staff(rid):
+    if not session.get("staff_logged_in"):
+        flash("Login required", "error")
+        return redirect(url_for("staff_login"))
+
+    status = request.form.get("status")
+    email = session.get("staff_email")
+
+    db = get_db()
+    cur = db.cursor()
+    # Only allow staff to update assigned reports
+    cur.execute("SELECT assigned_to FROM reports WHERE id=%s", (rid,))
+    report = cur.fetchone()
+    if not report or report[0] != email:
+        flash("You are not assigned to this report!", "error")
+        cur.close()
+        return redirect(url_for("staff_dashboard"))
+
+    cur.execute("UPDATE reports SET status=%s, updated_at=NOW() WHERE id=%s", (status, rid))
+    db.commit()
+    cur.close()
+    flash("Status updated.", "success")
+    return redirect(url_for("staff_dashboard"))
+    
 @app.route("/report/<int:rid>")
 def view_report(rid):
     db = get_db()
@@ -438,6 +478,40 @@ def add_note(rid):
 
     flash("Note added.", "success")
     return redirect(url_for("view_report", rid=rid))
+    
+@app.post("/staff_assign_self/<int:rid>")
+def assign_to_self_staff(rid):
+    if not session.get("staff_logged_in"):
+        flash("Login required", "error")
+        return redirect(url_for("staff_login"))
+
+    email = session.get("staff_email")
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("UPDATE reports SET assigned_staff_id=%s WHERE id=%s", (email, rid))
+    db.commit()
+    cur.close()
+    flash("You are now assigned to this report!", "success")
+    return redirect(url_for("staff_dashboard"))
+    
+@app.post("/staff_assign_other/<int:rid>")
+def assign_to_other_staff(rid):
+    if not session.get("staff_logged_in") or session.get("staff_role") != "vdmratelking":
+        flash("Unauthorized!", "error")
+        return redirect(url_for("staff_dashboard"))
+
+    user_email = request.form.get("user_email")
+    if not user_email:
+        flash("Select a user!", "error")
+        return redirect(url_for("staff_dashboard"))
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("UPDATE reports SET assigned_to=%s WHERE id=%s", (user_email, rid))
+    db.commit()
+    cur.close()
+    flash("Report assigned successfully!", "success")
+    return redirect(url_for("staff_dashboard"))
     
 if __name__ == "__main__":
      with app.app_context():
