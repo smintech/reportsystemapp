@@ -299,7 +299,7 @@
 
     <!-- ===== EVIDENCE PREVIEW SECTION ===== -->
     <div class="evidence-box">
-            {% if evidence.files %}
+            {% for evid in reports %}
                 <h4>Uploaded Files:</h4>
                 <ul>
                     {% for f in evidence.files %}
@@ -325,7 +325,7 @@
 
             {% else %}
                 <p>No evidence submitted.</p>
-            {% endif %}
+            {% endfor %}
     </div>
 </div>
 
