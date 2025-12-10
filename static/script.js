@@ -146,3 +146,16 @@ function getCookie(name) {
       return "";
   }
 });
+document.querySelectorAll(".options-group li").forEach(option => {
+    option.addEventListener("click", function () {
+        let group = this.getAttribute("data-group");
+        let value = this.getAttribute("data-value");
+
+        // Set hidden inputs
+        document.getElementById("category-group").value = group;
+        document.getElementById("options-group").value = value;
+
+        // Optional UI preview
+        document.querySelector(".select-header").textContent = group + " → " + value;
+    });
+});
