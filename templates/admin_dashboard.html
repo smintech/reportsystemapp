@@ -30,18 +30,11 @@
         --color-btn-toggle: #1d4ed8;
         --color-btn-toggle-hover: #1b40c4;
 
-        --color-btn-reports: #10b981;
-        --color-btn-reports-hover: #059669;
-
-        --color-btn-view-reports: #f59e0b;
-        --color-btn-view-reports-hover: #b45309;
-
         --radius: 12px;
         --shadow: 0 8px 20px rgba(0,0,0,0.12);
         --transition: 0.3s ease;
     }
 
-    /* ===== BASE ===== */
     * {
         margin: 0;
         padding: 0;
@@ -54,7 +47,6 @@
         color: var(--color-text);
     }
 
-    /* ===== HEADER ===== */
     .dashboard-header {
         background: var(--color-header);
         color: var(--color-header-text);
@@ -65,7 +57,6 @@
         box-shadow: var(--shadow);
     }
 
-    /* ===== BUTTONS ===== */
     .btn {
         display: inline-block;
         padding: 10px 18px;
@@ -77,23 +68,11 @@
         cursor: pointer;
     }
 
-    .btn-primary {
-        background: var(--color-btn-primary);
-    }
+    .btn-primary { background: var(--color-btn-primary); }
+    .btn-primary:hover { background: var(--color-btn-primary-hover); transform: scale(1.03); }
 
-    .btn-primary:hover {
-        background: var(--color-btn-primary-hover);
-        transform: scale(1.03);
-    }
-
-    .btn-logout {
-        background: var(--color-btn-logout);
-    }
-
-    .btn-logout:hover {
-        background: var(--color-btn-logout-hover);
-        transform: scale(1.03);
-    }
+    .btn-logout { background: var(--color-btn-logout); }
+    .btn-logout:hover { background: var(--color-btn-logout-hover); transform: scale(1.03); }
 
     .btn-delete {
         background: var(--color-btn-delete);
@@ -101,11 +80,7 @@
         padding: 6px 12px;
         font-size: 14px;
     }
-
-    .btn-delete:hover {
-        background: var(--color-btn-delete-hover);
-        transform: scale(1.05);
-    }
+    .btn-delete:hover { background: var(--color-btn-delete-hover); transform: scale(1.05); }
 
     .btn-toggle {
         background: var(--color-btn-toggle);
@@ -113,37 +88,8 @@
         padding: 6px 12px;
         font-size: 14px;
     }
+    .btn-toggle:hover { background: var(--color-btn-toggle-hover); transform: scale(1.05); }
 
-    .btn-toggle:hover {
-        background: var(--color-btn-toggle-hover);
-        transform: scale(1.05);
-    }
-
-    .btn-reports {
-        background: var(--color-btn-reports);
-        border: none;
-        padding: 10px 18px;
-        font-size: 14px;
-    }
-
-    .btn-reports:hover {
-        background: var(--color-btn-reports-hover);
-        transform: scale(1.03);
-    }
-
-    .btn-view-reports {
-        background: var(--color-btn-view-reports);
-        border: none;
-        padding: 10px 18px;
-        font-size: 14px;
-    }
-
-    .btn-view-reports:hover {
-        background: var(--color-btn-view-reports-hover);
-        transform: scale(1.03);
-    }
-
-    /* ===== TOP NAV BAR ===== */
     .top-actions {
         padding: 20px 30px;
         display: flex;
@@ -151,23 +97,19 @@
         flex-wrap: wrap;
     }
 
-    /* ===== FLASH MESSAGES ===== */
     .flash-messages {
         margin: 10px 30px;
         list-style: none;
     }
-
     .flash-messages li {
         padding: 12px 15px;
         margin-bottom: 10px;
         border-radius: var(--radius);
         font-weight: 600;
     }
-
     .success { background: #dcfce7; color: #16a34a; }
     .error { background: #fee2e2; color: #dc2626; }
 
-    /* ===== CARD ===== */
     .card {
         background: var(--color-card-bg);
         margin: 20px 30px;
@@ -182,35 +124,40 @@
         font-weight: 700;
     }
 
-    /* ===== TABLE ===== */
-    table {
+    .user-table,
+    .report-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 15px;
         min-width: 700px;
     }
 
-    th, td {
+    .user-table th,
+    .user-table td,
+    .report-table th,
+    .report-table td {
         padding: 14px;
         border-bottom: 1px solid #e2e8f0;
         text-align: left;
     }
 
-    th {
+    .user-table th,
+    .report-table th {
         background: var(--color-header);
         color: var(--color-header-text);
     }
 
-    tr:nth-child(even) td {
+    .user-table tr:nth-child(even) td,
+    .report-table tr:nth-child(even) td {
         background: var(--color-row-alt);
     }
 
-    tr:hover td {
+    .user-table tr:hover td,
+    .report-table tr:hover td {
         background: #dbeafe;
         transition: var(--transition);
     }
 
-    /* ===== DETAILS (Show/Hide Section) ===== */
     .details {
         display: none;
         margin-top: 6px;
@@ -220,148 +167,159 @@
         border-radius: 8px;
     }
 
-    /* ===== REPORTS LINK BUTTON ===== */
-    .btn-link {
-        display: inline-block;
-        margin: 10px 0;
-        padding: 8px 16px;
-        background: #f59e0b;
-        color: #fff;
-        text-decoration: none;
+    /* ===== EVIDENCE BOX ===== */
+    .evidence-box {
+        margin-top: 20px;
+        padding: 18px;
+        background: #f0f9ff;
+        border-left: 5px solid #2563eb;
         border-radius: var(--radius);
-        font-weight: 600;
-        transition: var(--transition);
+        box-shadow: var(--shadow);
     }
 
-    .btn-link:hover {
-        background: #b45309;
-        transform: scale(1.03);
+    .evidence-box a {
+        color: #1d4ed8;
+        font-weight: 600;
+        text-decoration: none;
     }
+    .evidence-box a:hover {
+        text-decoration: underline;
+    }
+
 </style>
 </head>
 <body>
 
-    <!-- HEADER -->
-    <div class="dashboard-header">
-        Admin Dashboard
-    </div>
+<div class="dashboard-header">Admin Dashboard</div>
 
-    <!-- NAV -->
-    <div class="top-actions">
-        <span class="btn btn-primary">Welcome, Moorelink!</span>
-        <a href="{{ url_for('admin_logout') }}" class="btn btn-logout">Logout</a>
-        <a href="{{ url_for('list_users') }}" class="btn btn-primary">View Users</a>
-        <a href="{{ url_for('add_user') }}" class="btn btn-primary">Add New User</a>
-        <a href="{{ url_for('reports_page') }}" class="btn btn-reports">Manage Reports</a>
-        <a href="{{ url_for('reports_page') }}" class="btn btn-view-reports">View All Reports</a>
-    </div>
+<div class="top-actions">
+    <span class="btn btn-primary">Welcome, Moorelink!</span>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-logout">Logout</a>
+    <a href="{{ url_for('list_users') }}" class="btn btn-primary">View Users</a>
+    <a href="{{ url_for('add_user') }}" class="btn btn-primary">Add New User</a>
+    <a href="{{ url_for('reports_page') }}" class="btn btn-primary">Manage Reports</a>
+    <a href="{{ url_for('reports_page') }}" class="btn btn-primary">View All Reports</a>
+</div>
 
-    <!-- FLASH MESSAGES -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul class="flash-messages">
-          {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flash-messages">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
-    <!-- USERS PREVIEW CARD -->
-    <div class="card">
-        <h2>Users Preview</h2>
+<div class="card">
+    <h2>Users Preview</h2>
 
-        <div style="overflow-x:auto;">
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+    <div style="overflow-x:auto;">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.role }}</td>
-                        <td>{{ user.created_at }}</td>
-                        <td>
-                            <!-- DELETE BUTTON -->
-                            <form action="{{ url_for('delete_user', user_id=user.id) }}" 
-                                  method="POST" 
-                                  style="display:inline;">
-                                <button type="submit" class="btn-delete"
-                                onclick="return confirm('Delete user {{ user.email }}?');">
-                                    Delete
-                                </button>
-                            </form>
-
-                            <!-- SHOW DETAILS BUTTON -->
-                            <button class="btn-toggle" onclick="toggleDetails({{ user.id }})">
-                                Show Details
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.created_at }}</td>
+                    <td>
+                        <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-delete"
+                            onclick="return confirm('Delete user {{ user.email }}?');">
+                                Delete
                             </button>
+                        </form>
 
-                            <!-- DETAILS BOX -->
-                            <div id="details-{{ user.id }}" class="details">
-                                <strong>Password (hashed):</strong><br>
-                                {{ user.password_hash }}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        <button class="btn-toggle" onclick="toggleDetails({{ user.id }})">
+                            Show Details
+                        </button>
+
+                        <div id="details-{{ user.id }}" class="details">
+                            <strong>Password (hashed):</strong><br>
+                            {{ user.password_hash }}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+<!-- REPORTS PREVIEW -->
+<div class="card">
+    <h2>Recent Reports</h2>
+
+    <div style="overflow-x:auto;">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tracking ID</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Reporter Email</th>
+                    <th>Assigned To</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for r in reports[:10] %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.tracking_id }}</td>
+                    <td>{{ r.category }}</td>
+                    <td>{{ r.status }}</td>
+                    <td>{{ r.reporter_email if r.reporter_email else 'Anonymous' }}</td>
+                    <td>{{ r.assigned_staff_id if r.assigned_staff_id else 'Unassigned' }}</td>
+                    <td>{{ r.created_at }}</td>
+                    <td>
+                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn btn-primary" style="padding:6px 10px;font-size:13px;">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
     </div>
 
-    <!-- RECENT REPORTS PREVIEW -->
-    <div class="card">
-        <h2>Recent Reports</h2>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tracking ID</th>
-                        <th>Category</th>
-                        <th>Status</th>
-                        <th>Reporter Email</th>
-                        <th>Assigned To</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in reports[:10] %}  <!-- preview last 10 -->
-                    <tr>
-                        <td>{{ r.id }}</td>
-                        <td>{{ r.tracking_id }}</td>
-                        <td>{{ r.category }}</td>
-                        <td>{{ r.status }}</td>
-                        <td>{{ r.reporter_email if r.reporter_email else 'Unavailable' }}</td>
-                        <td>{{ r.assigned_staff_id if r.assigned_staff_id else 'Unassigned' }}</td>
-                        <td>{{ r.created_at }}</td>
-                        <td>
-                            <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-link">View</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <a href="{{ url_for('reports_page') }}" class="btn-link">View All Reports</a>
+    <!-- ===== EVIDENCE PREVIEW SECTION ===== -->
+    <div class="evidence-box">
+        <h3 style="margin-bottom:10px;">Evidence Files</h3>
+
+        {% if reports and reports[0].evidence %}
+            {% for file in reports[0].evidence.split(',') %}
+                <a href="/evidence/{{ reports[0].tracking_id }}/{{ file }}" target="_blank">
+                    {{ file }}
+                </a><br>
+            {% endfor %}
+        {% else %}
+            <p>No file uploaded</p>
+        {% endif %}
     </div>
 
-    <!-- JAVASCRIPT TO TOGGLE DETAILS -->
-    <script>
-        function toggleDetails(id) {
-            const box = document.getElementById("details-" + id);
-            box.style.display = box.style.display === "none" ? "block" : "none";
-        }
-    </script>
+</div>
+
+<script>
+    function toggleDetails(id) {
+        const box = document.getElementById("details-" + id);
+        box.style.display = box.style.display === "none" ? "block" : "none";
+    }
+</script>
 
 </body>
 </html>
