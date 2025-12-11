@@ -106,7 +106,7 @@ def home():
                 return redirect(url_for("home"))
 
             # Get anon cookie or create new one
-            anon_id_cookie = request.cookies.get("anon_id")
+            anon_id, anon_cookie = get_or_create_anon_cookie(cur)
             try:
                 anon_id = int(anon_id_cookie)
             except (TypeError, ValueError):
@@ -123,7 +123,7 @@ def home():
                 if row:
                     active_tracking = row["tracking_id"]
 
-            if not active_tracking and anon_id and fingerprint:
+            if not active_tracking and fingerprint:
                 cur.execute("""
                     SELECT tracking_id FROM reports
                     WHERE anon_id = %s AND fingerprint = %s AND status IN ('Pending','In Progress')
@@ -170,7 +170,7 @@ def home():
             # ------------------- SEND RESPONSE + COOKIE -------------------
             response = make_response(redirect(url_for("home")))
             expires = datetime(2038, 12, 19)
-            response.set_cookie("anon_id", str(anon_id), expires=expires, httponly=True, samesite="Lax")
+            response.set_cookie("anon_id", anon_cookie, expires=expires, httponly=True, samesite="Lax")
 
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
             return response
@@ -178,15 +178,29 @@ def home():
         # ------------------- GET REQUEST -------------------
         return render_template("index.html", tracking_id=tracking_id)
     
-def get_or_create_anon_cookie():
-    anon_id = request.cookies.get("anon_id")
-    if not anon_id:
-        anon_id = random.randint(100000, 999999)
-    else:
-        try:
-            anon_id = int(anon_id)
-        except ValueError:
-            anon_id = random.randint(100000, 999999)
+def get_or_create_anon_cookie(cur):
+    """
+    Returns a tuple: (anon_id_for_db:int, anon_cookie:str)
+    - anon_id_for_db → integer, stored in DB (matches table constraint)
+    - anon_cookie → UUID string, stored in browser cookie
+    """
+    anon_cookie = request.cookies.get("anon_id")
+    if anon_cookie:
+        # Try to find the corresponding anon_id in DB (last report)
+        cur.execute("""
+            SELECT anon_id FROM reports 
+            WHERE tracking_id IN (
+                SELECT tracking_id FROM reports ORDER BY created_at DESC LIMIT 1
+            )
+        """)
+        row = cur.fetchone()
+        anon_id = row["anon_id"] if row else random.randint(100000, 999999)
+        return anon_id, anon_cookie
+
+    # No cookie → create new integer ID for DB and UUID for cookie
+    anon_id = random.randint(100000, 999999)
+    anon_cookie = str(uuid.uuid4())
+    return anon_id, anon_cookie
     
 @app.route("/evidence/<tracking_id>/<filename>")
 def get_evidence(tracking_id, filename):
