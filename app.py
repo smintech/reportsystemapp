@@ -154,20 +154,17 @@ def home():
                         saved_files.append(filename)
 
             # Combine file names or use evidence_link
-            if saved_files:
-                evidence_str = json.dumps(saved_files)
-            elif evidence_link:
-                evidence_str = json.dumps([evidence_link])  # treat as link
-            else:
-                evidence_str = json.dumps([])
+            evidence_list = saved_files if saved_files else []
+            if evidence_link:
+                evidence_list.append(evidence_link)
+            evidence_json = json.dumps(evidence_list
 
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
-                (fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-                RETURNING anon_id
-            """, (fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_str))
+                (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+            """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_str))
             
             anon_id = cur.fetchone()[0]
 
