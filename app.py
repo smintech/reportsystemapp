@@ -90,11 +90,12 @@ def home():
         if request.method == "POST":
             reporter_email = request.form.get("reporter_email") or None
             fingerprint = request.form.get("fingerprint") or None
-            category = request.form.get("category", "").strip()
+            category_group = request.form.get("category_group", "").strip()
+            options_group = request.form.get("options_group","").strip()
             details = request.form.get("details", "").strip()
             evidence_link = request.form.get("evidence") or None  # link text input
 
-            if not category or not details:
+            if not category_group or not details:
                 flash("Category and details are required.", "error")
                 return redirect(url_for("home"))
 
@@ -155,9 +156,9 @@ def home():
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
-                (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence, status, created_at, updated_at)
+                (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            """, (anon_id, fingerprint, reporter_email, tracking_id, category, details, evidence_str))
+            """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_str))
 
             db.commit()
 
