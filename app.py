@@ -157,7 +157,7 @@ def home():
             evidence_list = saved_files if saved_files else []
             if evidence_link:
                 evidence_list.append(evidence_link)
-            evidence_json = json.dumps(evidence_list
+            evidence_json = json.dumps(evidence_list)
 
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
@@ -579,6 +579,13 @@ def view_report(rid):
 
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
+    
+    evidence_list = []
+    if report["evidence"]:
+        try:
+            evidence_list = json.loads(report["evidence"])
+        except:
+            evidence_list = []
 
     cur.close()
     return render_template("view_report.html", report=report, notes=notes)
