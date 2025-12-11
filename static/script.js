@@ -81,32 +81,43 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-  const reportForm = document.getElementById('reportForm');
-  const evidenceInput = document.getElementById('evidence'); // separate evidence input
+document.getElementById("submitbtn").addEventListener("click", function () {
+    const categoryGroup = document.getElementById("category-group").value;
+    const categoryItem = document.getElementById("options-group").value;
+    const details = document.getElementById("report").value;
+    let valid = true
 
-  reportForm.addEventListener('submit', (e) => {
-      let valid = true;
+    if (!categoryGroup || !categoryItem) {
+        alert("Please select a category.");
+        return;
+    }
+    if (details.length < 20) {
+        alert("Enter at least 20 characters.");
+        return;
+    }
 
-      // Minimum report length
-      if (reportBox.value.length < 20) {
-          errorMsg.style.display = 'block';
-          alert("Enter at least 20 characters for the report.");
-          valid = false;
-      }
+    const formData = new FormData();
+    formData.append("category_group", category-group);
+    formData.append("options_group", options-group);
+    formData.append("details", details);
 
-      // Category selected
-      if (!categoryInput.value) {
-          alert("Please select a category for your report.");
-          valid = false;
-      }
+    const files = document.getElementById("fileinput").files;
+    for (let f of files) {
+        formData.append("fileinput", f);
+    }
 
-      // Evidence optional: you can add extra validation if needed
-      // Example: URL format check
-      if (evidenceInput && evidenceInput.value.length > 0) {
-          const urlPattern = /^(https?:\/\/)?([\w-]+)+([\w./?%&=-]*)?$/;
-          if (!urlPattern.test(evidenceInput.value)) {
-              alert("Evidence must be a valid URL or leave blank.");
-              valid = false;
+    fetch("/", {
+        method: "POST",
+        body: formData   // IMPORTANT
+    })
+    .then(res => window.location.reload())
+    .catch(err => alert("Error submitting report"));
+    
+    if (evidenceInput && evidenceInput.value.length > 0) {
+        const urlPattern = /^(https?:\/\/)?([\w-]+)+([\w./?%&=-]*)?$/;
+        if (!urlPattern.test(evidenceInput.value)) {
+            alert("Evidence must be a valid URL or leave blank.");
+            valid = false;
           }
       }
 
