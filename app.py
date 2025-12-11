@@ -11,7 +11,8 @@ import psycopg2.extras
 from psycopg2 import IntegrityError
 import uuid
 import hashlib
-import random 
+import random
+import json
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
@@ -154,11 +155,11 @@ def home():
 
             # Combine file names or use evidence_link
             if saved_files:
-                evidence_str = ",".join(saved_files)
+                evidence_str = json.dumps(saved_files)
             elif evidence_link:
-                evidence_str = evidence_link  # treat as link
+                evidence_str = json.dumps([evidence_link])  # treat as link
             else:
-                evidence_str = None
+                evidence_str = json.dumps([])
 
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
@@ -209,21 +210,34 @@ def delete_expired_files(tracking_id, updated_at, days=30):
 def parse_evidence(evidence_value):
     """
     Returns a dict containing:
-      files → list of filenames
-      link → URL string
-      single → single filename
-    Everything else is None.
+      files → list of filenames or links
+      link → first link if only one
+      single → first file if only one
     """
     if not evidence_value:
         return {"files": None, "link": None, "single": None}
-    # Case 1 → Comma-separated uploaded files
-    if "," in evidence_value:
-        return {"files": evidence_value.split(","), "link": None, "single": None}
-    # Case 2 → External link
-    if evidence_value.startswith("http"):
-        return {"files": None, "link": evidence_value, "single": None}
-    # Case 3 → One uploaded file
-    return {"files": None, "link": None, "single": evidence_value}
+
+    # Convert JSON string to Python object
+    try:
+        evidence_list = json.loads(evidence_value)  # evidence_value is JSONB from DB
+    except (TypeError, json.JSONDecodeError):
+        # fallback if somehow string is stored
+        evidence_list = [evidence_value]
+
+    # If empty list
+    if not evidence_list:
+        return {"files": None, "link": None, "single": None}
+
+    # Only one item
+    if len(evidence_list) == 1:
+        item = evidence_list[0]
+        if str(item).startswith("http"):
+            return {"files": None, "link": item, "single": None}
+        else:
+            return {"files": None, "link": None, "single": item}
+
+    # Multiple items
+    return {"files": evidence_list, "link": None, "single": None}
     
 def adminonly(f):
     @wraps(f)
