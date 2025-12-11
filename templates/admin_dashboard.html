@@ -279,8 +279,10 @@
                 {% for r in reports[:10] %}
                 <tr>
                     <td>{{ r.id }}</td>
+                    <td>{{ r.anon_id }}</td>
                     <td>{{ r.tracking_id }}</td>
-                    <td>{{ r.category }}</td>
+                    <td>{{ r.category_group }}</td>
+                    <td>{{ r.options_group }}</td>
                     <td>{{ r.status }}</td>
                     <td>{{ r.reporter_email if r.reporter_email else 'Anonymous' }}</td>
                     <td>{{ r.assigned_staff_id if r.assigned_staff_id else 'Unassigned' }}</td>
