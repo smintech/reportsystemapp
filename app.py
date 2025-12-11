@@ -368,6 +368,22 @@ def delete_user(user_id):
         flash("User deleted successfully!", "success")
     return redirect(url_for("admin_dashboard"))
     
+@app.route("/delete/<tracking_id>", methods=["POST"])
+    if not session.get("staff_logged_in"):
+        flash("Please log in first.", "error")
+        return redirect(url_for("staff_login"))
+def delete_report(tracking_id):
+    db = get_db()
+    with db.cursor() as cur:
+    
+        cur.execute("DELETE FROM reports WHERE tracking_id = %s", (tracking_id,))
+        db.commit()
+        # delete uploaded files folder
+        folder_path = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)
+    return jsonify({"message": "Report deleted successfully"})
+    
 @app.route("/staff_login", methods=["GET", "POST"])
 def staff_login():
     if request.method == "POST":
