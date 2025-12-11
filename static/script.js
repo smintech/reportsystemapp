@@ -97,8 +97,8 @@ document.getElementById("submitbtn").addEventListener("click", function () {
     }
 
     const formData = new FormData();
-    formData.append("category_group", category-group);
-    formData.append("options_group", options-group);
+    formData.append("category_group", categoryGroup);
+    formData.append("options_group", categoryItem);
     formData.append("details", details);
 
     const files = document.getElementById("fileinput").files;
