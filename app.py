@@ -51,7 +51,7 @@ def init_db():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS reports (
         id SERIAL PRIMARY KEY,
-        anon_id INTEGER NOT NULL DEFAULT nextval('anon_seq'),
+        anon_id INTEGER NULL,
         fingerprint TEXT,
         reporter_email TEXT,
         tracking_id TEXT,
@@ -72,10 +72,6 @@ def init_db():
     added_by TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
-    """)
-    
-    cur.execute("""
-    CREATE SEQUENCE IF NOT EXISTS anon_seq START 100000;
     """)
     
     cur.execute("""
