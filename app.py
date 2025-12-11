@@ -107,11 +107,7 @@ def home():
 
             # Get anon cookie or create new one
             anon_id, anon_cookie = get_or_create_anon_cookie(cur)
-            try:
-                anon_id = int(anon_id_cookie)
-            except (TypeError, ValueError):
-                anon_id = random.randint(100000, 999999)
-            # -------- Check for active tracking --------
+            
             active_tracking = None
             if reporter_email:
                 cur.execute("""
