@@ -370,21 +370,21 @@ def delete_user(user_id):
     
 @app.route("/delete/<tracking_id>", methods=["POST"])
 def delete_report(tracking_id):
-    # ---- AUTH CHECK ----
     if not session.get("staff_logged_in"):
-        return jsonify({"error": "Unauthorized"}), 401
+        flash("Please log in first.", "error")
+        return redirect(url_for("staff_login"))
 
     db = get_db()
     with db.cursor() as cur:
         cur.execute("DELETE FROM reports WHERE tracking_id = %s", (tracking_id,))
         db.commit()
 
-    # ---- DELETE FILES ----
     folder_path = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
 
-    return jsonify({"message": "Report deleted successfully"})
+    flash("Report deleted successfully.", "success")
+    return redirect(url_for("staff_dashboard"))
     
 @app.route("/staff_login", methods=["GET", "POST"])
 def staff_login():
