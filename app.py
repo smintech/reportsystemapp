@@ -173,7 +173,8 @@ def home():
 
             # ------------------- SEND RESPONSE + COOKIE -------------------
             response = make_response(redirect(url_for("home")))
-            response.set_cookie("anon_id", str(anon_id), max_age=90*24*3600, httponly=True, samesite="Lax")
+            expires = datetime(2038, 12, 19)
+            response.set_cookie("anon_id", str(anon_id), expires=expires, httponly=True, samesite="Lax")
 
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
             return response
@@ -183,10 +184,13 @@ def home():
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
-    try:
-        anon_id = int(anon_id_cookie)
-    except (TypeError, ValueError):
+    if not anon_id:
         anon_id = random.randint(100000, 999999)
+    else:
+        try:
+            anon_id = int(anon_id)
+        except ValueError:
+            anon_id = random.randint(100000, 999999)
     
 @app.route("/evidence/<tracking_id>/<filename>")
 def get_evidence(tracking_id, filename):
