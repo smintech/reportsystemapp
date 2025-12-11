@@ -108,10 +108,11 @@ def home():
                 return redirect(url_for("home"))
 
             # Get anon cookie or create new one
-            anon_id = request.cookies.get("anon_id")
-            if not anon_id:
+            anon_id_cookie = request.cookies.get("anon_id")
+            try:
+                anon_id = int(anon_id_cookie)
+            except (TypeError, ValueError):
                 anon_id = random.randint(100000, 999999)
-
             # -------- Check for active tracking --------
             active_tracking = None
             if reporter_email:
@@ -164,7 +165,7 @@ def home():
                 INSERT INTO reports
                 (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_list))
+            """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, json.dumps(evidence_list)))
             
             anon_id = cur.fetchone()[0]
 
@@ -182,9 +183,10 @@ def home():
     
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
-    if not anon_id:
+    try:
+        anon_id = int(anon_id_cookie)
+    except (TypeError, ValueError):
         anon_id = random.randint(100000, 999999)
-    return anon_id
     
 @app.route("/evidence/<tracking_id>/<filename>")
 def get_evidence(tracking_id, filename):
