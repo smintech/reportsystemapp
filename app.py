@@ -158,7 +158,7 @@ def home():
             cur.execute("""
                 INSERT INTO reports
                 (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
             """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_str))
 
             db.commit()
