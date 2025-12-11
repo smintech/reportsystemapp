@@ -301,11 +301,11 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    
-    for r in reports:
-        r['evidence_parsed'] = parse_evidence(r['evidence'])
-        if r["status"] in ("Resolved","Rejected"):
-            delete_expired_files(r["tracking_id"], r["updated_at"], days=30)  
+    for i, r in enumerate(reports):
+        reports[i] = dict(r)  # convert psycopg2 row to regular dict
+        reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
+        if reports[i]['status'] in ("Resolved", "Rejected"):
+            delete_expired_files(reports[i]['tracking_id'], reports[i]['updated_at'], days=30)  
     
     cur.close()
     return render_template("admin_dashboard.html", users=users, reports=reports)
@@ -412,10 +412,11 @@ def staff_dashboard():
         cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (user_id,))
         reports = cur.fetchall()
         
-    for r in reports:
-        r['evidence_parsed'] = parse_evidence(r['evidence'])
-        if r["status"] in ("Resolved","Rejected"):
-            delete_expired_files(r["tracking_id"], r["updated_at"], days=30)
+    for i, r in enumerate(reports):
+        reports[i] = dict(r)  # convert psycopg2 row to regular dict
+        reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
+        if reports[i]['status'] in ("Resolved", "Rejected"):
+            delete_expired_files(reports[i]['tracking_id'], reports[i]['updated_at'], days=30)
                         
     cur.close()
         
