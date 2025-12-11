@@ -169,7 +169,7 @@ def home():
 
             # ------------------- SEND RESPONSE + COOKIE -------------------
             response = make_response(redirect(url_for("home")))
-            expires = datetime.datetime(2038, 12, 19)
+            expires = datetime(2038, 12, 19)
             response.set_cookie("anon_id", str(anon_id), expires=expires, httponly=True, samesite="Lax")
 
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
