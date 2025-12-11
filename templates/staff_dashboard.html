@@ -108,6 +108,9 @@
 
     .btn-status { background: #f59e0b; }
     .btn-status:hover { background: #b45309; }
+    
+    .btn-delete { background: red; }
+    .btn-delete:hover { background: red; }
 
     select {
         padding: 5px 8px;
@@ -203,6 +206,10 @@
                                 {% endfor %}
                             </select>
                             <button class="btn-table btn-assign">Assign Other</button>
+                        </form>
+                        
+                         <form action="/delete_report/{{ report.tracking_id }}" method="POST" style="display:inline;">
+                            <button class="btn-table btn-delete" onclick="return confirm('Delete this report?');">Delete</button>
                         </form>
 
                         <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
