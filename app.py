@@ -11,6 +11,7 @@ import psycopg2.extras
 from psycopg2 import IntegrityError
 import uuid
 import hashlib
+import random 
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
@@ -49,7 +50,7 @@ def init_db():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS reports (
         id SERIAL PRIMARY KEY,
-        anon_id TEXT,
+        anon_id INTEGER NOT NULL DEFAULT nextval('anon_seq'),
         fingerprint TEXT,
         reporter_email TEXT,
         tracking_id TEXT,
@@ -73,8 +74,13 @@ def init_db():
     """)
     
     cur.execute("""
+    CREATE SEQUENCE IF NOT EXISTS anon_seq START 100000;
+    """)
+    
+    cur.execute("""
     CREATE INDEX IF NOT EXISTS idx_reports_active ON reports (anon_id, fingerprint, reporter_email, status);
     """)
+    
     cur.execute("""
     CREATE UNIQUE INDEX IF NOT EXISTS unique_admin ON users((CASE WHEN role='admin' THEN 1 ELSE NULL END));
     """)
@@ -103,7 +109,7 @@ def home():
             # Get anon cookie or create new one
             anon_id = request.cookies.get("anon_id")
             if not anon_id:
-                anon_id = "anon_" + str(uuid.uuid4())
+                anon_id = random.randint(100000, 999999)
 
             # -------- Check for active tracking --------
             active_tracking = None
@@ -157,15 +163,18 @@ def home():
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
-                (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_str))
+                (fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+                RETURNING anon_id
+            """, (fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_str))
+            
+            anon_id = cur.fetchone()[0]
 
             db.commit()
 
             # ------------------- SEND RESPONSE + COOKIE -------------------
             response = make_response(redirect(url_for("home")))
-            response.set_cookie("anon_id", anon_id, max_age=90*24*3600, httponly=True, samesite="Lax")
+            response.set_cookie("anon_id", str(anon_id), max_age=90*24*3600, httponly=True, samesite="Lax")
 
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
             return response
@@ -176,7 +185,7 @@ def home():
 def get_or_create_anon_cookie():
     anon_id = request.cookies.get("anon_id")
     if not anon_id:
-        anon_id = "anon_" + str(uuid.uuid4())
+        anon_id = random.randint(100000, 999999)
     return anon_id
     
 @app.route("/evidence/<tracking_id>/<filename>")
