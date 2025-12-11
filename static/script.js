@@ -81,25 +81,41 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-document.getElementById("submitbtn").addEventListener("click", function () {
+document.getElementById("submitbtn").addEventListener("click", function (e) {
+    e.preventDefault();
+
     const categoryGroup = document.getElementById("category-group").value;
     const categoryItem = document.getElementById("options-group").value;
     const details = document.getElementById("report").value;
-    let valid = true
+    const evidenceInput = document.getElementById("evidence"); // FIXED
 
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
         return;
     }
+
     if (details.length < 20) {
         alert("Enter at least 20 characters.");
         return;
+    }
+
+    // Validate evidence URL BEFORE submitting
+    if (evidenceInput && evidenceInput.value.trim().length > 0) {
+        const urlPattern = /^(https?:\/\/)[\w.-]+\.[a-z]{2,}(\/.*)?$/i;
+        if (!urlPattern.test(evidenceInput.value.trim())) {
+            alert("Evidence must be a valid URL (starting with http:// or https://).");
+            return;
+        }
     }
 
     const formData = new FormData();
     formData.append("category_group", categoryGroup);
     formData.append("options_group", categoryItem);
     formData.append("details", details);
+
+    if (evidenceInput && evidenceInput.value.trim() !== "") {
+        formData.append("evidence", evidenceInput.value.trim());
+    }
 
     const files = document.getElementById("fileinput").files;
     for (let f of files) {
@@ -108,23 +124,22 @@ document.getElementById("submitbtn").addEventListener("click", function () {
 
     fetch("/", {
         method: "POST",
-        body: formData   // IMPORTANT
+        body: formData
     })
-    .then(res => window.location.reload())
-    .catch(err => alert("Error submitting report"));
-    
-    if (evidenceInput && evidenceInput.value.length > 0) {
-        const urlPattern = /^(https?:\/\/)?([\w-]+)+([\w./?%&=-]*)?$/;
-        if (!urlPattern.test(evidenceInput.value)) {
-            alert("Evidence must be a valid URL or leave blank.");
-            valid = false;
-          }
-      }
-
-      if (!valid) {
-          e.preventDefault(); // stop submission if invalid
-      }
-  });
+    .then(async res => {
+        if (!res.ok) {
+            const text = await res.text();
+            console.log("Server error:", text);  // DEBUG
+            alert("Server error: " + res.status);
+            return;
+        }
+        window.location.reload();
+    })
+    .catch(err => {
+        alert("Error submitting report");
+        console.error(err);
+    });
+});
 
 const fingerprintInput = document.getElementById('fingerprint');
 if (fingerprintInput) {
