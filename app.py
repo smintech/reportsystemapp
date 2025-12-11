@@ -369,9 +369,10 @@ def delete_user(user_id):
     return redirect(url_for("admin_dashboard"))
     
 @app.route("/delete/<tracking_id>", methods=["POST"])
-    if not session.get("staff_logged_in"):
-        flash("Please log in first.", "error")
-        return redirect(url_for("staff_login"))
+if not session.get("staff_logged_in"):
+    flash("Please log in first.", "error")
+    return redirect(url_for("staff_login"))
+    
 def delete_report(tracking_id):
     db = get_db()
     with db.cursor() as cur:
