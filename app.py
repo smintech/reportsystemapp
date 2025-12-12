@@ -134,8 +134,7 @@ def home():
 
             # Get anon cookie or create new one
             anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
-            
-          cur.execute("""
+            cur.execute("""
                 SELECT tracking_id FROM reports
                 WHERE anon_id = %s AND status IN ('Pending','In Progress')
                 ORDER BY created_at DESC LIMIT 1
