@@ -1,10 +1,8 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session , flash, jsonify, make_response, send_from_directory, abort
 import os
-import shutil
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
-import datetime
 from datetime import datetime
 from datetime import timedelta
 import secrets
@@ -15,13 +13,18 @@ import uuid
 import hashlib
 import random
 import json
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
-UPLOAD_FOLDER = "uploads/"
+cloudinary.config(
+    cloud_name="dowpqktts",
+    api_key="819877624561655",
+    api_secret="OfGF1Kc261bOJa6dBUMDmk5p2po"
+    )
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'mp4'}  # Extend as needed
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
     
@@ -142,23 +145,19 @@ def home():
             # ------------------- HANDLE FILES -------------------
             # --- FILE UPLOAD ---
             files = request.files.getlist("fileinput")
-            saved_files = []
+            uploaded_urls = []
             evidence_str = None
-
             if files:
-                report_folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
-                os.makedirs(report_folder, exist_ok=True)
-                
-                saved_files = []
                 for file in files:
                     if file and allowed_file(file.filename):
-                        filename = secure_filename(file.filename)
-                        filepath = os.path.join(report_folder, filename)
-                        file.save(filepath)
-                        saved_files.append(filename)
+                        upload_result = cloudinary.uploader.upload(
+                        file,
+                        resource_type="auto"
+                        )
+                        uploaded_urls.append(upload_result["secure_url"])
 
             # Combine file names or use evidence_link
-            evidence_list = saved_files.copy()
+            evidence_list = uploaded_urls.copy()
             if evidence_link:
                 evidence_list.append(evidence_link)
             evidence_json = json.dumps(evidence_list)
@@ -183,47 +182,6 @@ def home():
 
         # ------------------- GET REQUEST -------------------
         return render_template("index.html", tracking_id=tracking_id)
-    
-@app.route("/evidence/<tracking_id>/<filename>")
-def get_evidence(tracking_id, filename):
-    
-    if filename.startswith("http"):
-        return "External links cannot be downloaded.", 400
-
-    clean_filename = (
-        filename.replace("%20", " ")
-                .replace(",", "")
-                .replace("[", "")
-                .replace("]", "")
-                .replace("'", "")
-                .strip()
-    )
-    
-    folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
-    file_path = os.path.join(folder, clean_filename)
-    
-    print("RAW:", filename)
-    print("CLEAN:", clean_filename)
-    print("LOOKING FOR:", file_path)
-    
-    if not os.path.exists(file_path):
-        return f"File not found: {clean_filename}", 404
-        
-    return send_from_directory(folder, clean_filename)
-
-def delete_expired_files(tracking_id, updated_at, days=30):
-    """
-    Deletes uploaded files DAYS after a case is resolved/rejected.
-    updated_at must be a datetime object from DB.
-    """
-    expiry_time = updated_at + timedelta(days=days)
-
-    if datetime.utcnow() > expiry_time:
-        folder = os.path.join(UPLOAD_FOLDER, tracking_id)
-        if os.path.exists(folder):
-            shutil.rmtree(folder)
-            return True
-    return False
     
 def parse_evidence(evidence_value):
     """
@@ -325,9 +283,6 @@ def admin_dashboard():
     for i, r in enumerate(reports):
         reports[i] = dict(r)  # convert psycopg2 row to regular dict
         reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
-        if reports[i]['status'] in ("Resolved", "Rejected"):
-            delete_expired_files(reports[i]['tracking_id'], reports[i]['updated_at'], days=30)  
-    
     cur.close()
     return render_template("admin_dashboard.html", users=users, reports=reports)
     
@@ -397,10 +352,6 @@ def delete_report(tracking_id):
         cur.execute("DELETE FROM reports WHERE tracking_id = %s", (tracking_id,))
         db.commit()
 
-    folder_path = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
-    if os.path.exists(folder_path):
-        shutil.rmtree(folder_path)
-
     flash("Report deleted successfully.", "success")
     return redirect(url_for("staff_dashboard"))
     
@@ -455,9 +406,7 @@ def staff_dashboard():
     for i, r in enumerate(reports):
         reports[i] = dict(r)  # convert psycopg2 row to regular dict
         reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
-        if reports[i]['status'] in ("Resolved", "Rejected"):
-            delete_expired_files(reports[i]['tracking_id'], reports[i]['updated_at'], days=30)
-                        
+        
     cur.close()
         
     return render_template("staff_dashboard.html",
