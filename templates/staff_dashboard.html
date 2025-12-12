@@ -304,29 +304,37 @@
                 <tr>
                     <td colspan="5">
                         <div class="evidence-box">
-                            {% set evidence = r.evidence_parsed %}
-                            
-                            {% if evidence.files %}
-                                <strong>Uploaded Files:</strong>
-                                <ul>
-                                    {% for f in evidence.files %}
-                                    <li><a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=f) }}" target="_blank">{{ f }}</a></li>
-                                    {% endfor %}
-                                </ul>
-
-                            {% elif evidence.single %}
-                                <strong>Uploaded File:</strong>
-                                <a href="{{ url_for('get_evidence', tracking_id=r.tracking_id, filename=evidence.single) }}" target="_blank">
-                                    {{ evidence.single }}
-                                </a>
-
-                            {% elif evidence.link %}
-                                <strong>Evidence Link:</strong>
-                                <a href="{{ evidence.link }}" target="_blank">{{ evidence.link }}</a>
-
-                            {% else %}
-                                <p>No evidence submitted.</p>
-                            {% endif %}
+                            {% for report in reports %}
+                                {% set evidence = report.evidence_parsed %}
+                                
+                                {% if evidence.files %}
+                                    <h4>Uploaded Files:</h4>
+                                    <ul>
+                                        {% for f in evidence.files %}
+                                            <li>
+                                                <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=f.value) }}" target="_blank">
+                                                    Download {{ f.value }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                {% elif evidence.single %}
+                                    <h4>Uploaded File:</h4>
+                                    <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=evidence.single) }}" target="_blank">
+                                        Download {{ evidence.single }}
+                                    </a>
+                                    
+                                {% elif evidence.link %}
+                                    <h4>Evidence Link:</h4>
+                                    <a href="{{ evidence.link }}" target="_blank">
+                                        {{ evidence.link }}
+                                    </a>
+                                    
+                                {% else %}
+                                    <p>No evidence submitted.</p>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </td>
                 </tr>
