@@ -128,6 +128,17 @@ def home():
                 row = cur.fetchone()
                 if row:
                     active_tracking = row["tracking_id"]
+                    
+            if not active_tracking:
+                cur.execute("""
+                SELECT tracking_id FROM reports
+                WHERE anon_id = %s
+                AND status IN ('Pending','In Progress')
+                ORDER BY created_at DESC LIMIT 1
+                """, (anon_id,))
+                row = cur.fetchone()
+                if row:
+                    active_tracking = row["tracking_id"]
 
             tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
 
