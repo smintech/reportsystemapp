@@ -86,7 +86,33 @@ def init_db():
     
     db.commit()
     cur.close()
+    
+def get_or_create_cookie_uuid(cur):
+    """
+    Returns a tuple: (anon_id_for_db:int, anon_cookie:str)
+    - anon_id_for_db → integer, stored in DB (matches table constraint)
+    - anon_cookie → UUID string, stored in browser cookie
+    """
+    anon_cookie = request.cookies.get("anon_id")
+    if anon_cookie:
+        # Try to find the corresponding anon_id in DB (last report)
+        cur.execute("""
+            SELECT anon_id FROM reports 
+            WHERE cookie_uuid =%s 
+            ORDER BY created_at DESC LIMIT 1
+        """,(anon_cookie,))
+        
+        row = cur.fetchone()
+        if row:
+            return row["anon_id"], anon_cookie
+            
+        return random.randint(100000, 999999), anon_cookie
 
+    # No cookie → create new integer ID for DB and UUID for cookie
+    anon_id = random.randint(100000, 999999)
+    anon_cookie = str(uuid.uuid4())
+    return anon_id, anon_cookie
+    
 @app.route("/", methods=["GET", "POST"])
 def home():
     tracking_id = None
@@ -177,30 +203,6 @@ def home():
 
         # ------------------- GET REQUEST -------------------
         return render_template("index.html", tracking_id=tracking_id)
-    
-def get_or_create_anon_cookie(cur):
-    """
-    Returns a tuple: (anon_id_for_db:int, anon_cookie:str)
-    """
-    anon_cookie = request.cookies.get("anon_id")
-    if anon_cookie:
-        # Try to find the corresponding anon_id in DB (last report)
-        cur.execute("""
-            SELECT anon_id FROM reports 
-            WHERE cookie_uuid =%s 
-            ORDER BY created_at DESC LIMIT 1
-        """,(anon_cookie,))
-        
-        row = cur.fetchone()
-        if row:
-            return row["anon_id"], anon_cookie
-            
-        return random.randint(100000, 999999), anon_cookie
-
-    # No cookie → create new integer ID for DB and UUID for cookie
-    anon_id = random.randint(100000, 999999)
-    anon_cookie = str(uuid.uuid4())
-    return anon_id, anon_cookie
     
 @app.route("/evidence/<tracking_id>/<filename>")
 def get_evidence(tracking_id, filename):
