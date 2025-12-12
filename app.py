@@ -189,15 +189,27 @@ def get_evidence(tracking_id, filename):
     
     if filename.startswith("http"):
         return "External links cannot be downloaded.", 400
-    
-    filename = filename.replace("%20", " ").replace(",", "").strip()
+
+    clean_filename = (
+        filename.replace("%20", " ")
+                .replace(",", "")
+                .replace("[", "")
+                .replace("]", "")
+                .replace("'", "")
+                .strip()
+    )
     
     folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
+    file_path = os.path.join(folder, clean_filename)
     
-    if not os.path.exists(os.path.join(folder, filename)):
-        return f"File not found: {filename}", 404
+    print("RAW:", filename)
+    print("CLEAN:", clean_filename)
+    print("LOOKING FOR:", file_path)
+    
+    if not os.path.exists(file_path):
+        return f"File not found: {clean_filename}", 404
         
-    return send_from_directory(folder, filename)
+    return send_from_directory(folder, clean_filename)
 
 def delete_expired_files(tracking_id, updated_at, days=30):
     """
