@@ -93,7 +93,7 @@ def get_or_create_cookie_uuid(cur):
     - anon_id_for_db → integer, stored in DB (matches table constraint)
     - anon_cookie → UUID string, stored in browser cookie
     """
-    cookie_uuid = request.cookies.get("anon_id")
+    cookie_uuid = request.cookies.get("cookie_uuid")
     if cookie_uuid:
         # Try to find the corresponding anon_id in DB (last report)
         cur.execute("""
