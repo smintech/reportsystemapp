@@ -89,26 +89,27 @@ def init_db():
     
 def get_or_create_cookie_uuid(cur):
     """
-    Returns a tuple: (anon_id_for_db:int, anon_cookie:str)
-    - anon_id_for_db → integer, stored in DB (matches table constraint)
-    - anon_cookie → UUID string, stored in browser cookie
+    Returns a tuple: (anon_id:int, cookie_uuid:str)
+    Ensures same sender always gets same anon_id if cookie exists.
     """
     cookie_uuid = request.cookies.get("cookie_uuid")
     if cookie_uuid:
-        # Try to find the corresponding anon_id in DB (last report)
+        # Lookup the last anon_id for this cookie in reports table
         cur.execute("""
-            SELECT anon_id FROM reports 
-            WHERE cookie_uuid =%s 
+            SELECT anon_id FROM reports
+            WHERE cookie_uuid = %s
             ORDER BY created_at DESC LIMIT 1
-        """,(cookie_uuid,))
-        
+        """, (cookie_uuid,))
         row = cur.fetchone()
         if row:
-            return row["anon_id"], cookie_uuid
-            
-        return random.randint(100000, 999999), anon_cookie
+            anon_id = row["anon_id"]
+            return anon_id, cookie_uuid
+        else:
+            # Cookie exists but no previous report → create new anon_id
+            anon_id = random.randint(100000, 999999)
+            return anon_id, cookie_uuid
 
-    # No cookie → create new integer ID for DB and UUID for cookie
+    # No cookie → create new anon_id and cookie UUID
     anon_id = random.randint(100000, 999999)
     cookie_uuid = str(uuid.uuid4())
     return anon_id, cookie_uuid
@@ -132,34 +133,17 @@ def home():
                 return redirect(url_for("home"))
 
             # Get anon cookie or create new one
-            cookie_uuid = get_or_create_cookie_uuid(cur)   # always UUID
-            anon_id = request.cookies.get("anon_id")
-            if not anon_id:
-                anon_id = random.randint(100000, 999999)
+            anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
             
-            active_tracking = None
-            if reporter_email:
-                cur.execute("""
-                    SELECT tracking_id FROM reports
-                    WHERE reporter_email = %s AND status IN ('Pending','In Progress')
-                    ORDER BY created_at DESC LIMIT 1
-                """, (reporter_email,))
-                row = cur.fetchone()
-                if row:
-                    active_tracking = row["tracking_id"]
-
-            if not active_tracking and fingerprint and cookie_uuid:
-                cur.execute("""
-                    SELECT tracking_id FROM reports
-                    WHERE cookie_uuid = %s AND fingerprint = %s AND status IN ('Pending','In Progress')
-                    ORDER BY created_at DESC LIMIT 1
-                """, (cookie_uuid, fingerprint))
-                row = cur.fetchone()
-                if row:
-                    active_tracking = row["tracking_id"]
+          cur.execute("""
+                SELECT tracking_id FROM reports
+                WHERE anon_id = %s AND status IN ('Pending','In Progress')
+                ORDER BY created_at DESC LIMIT 1
+            """, (anon_id,))
+            row = cur.fetchone()
+            active_tracking = row["tracking_id"] if row else None
 
             tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
-
             # ------------------- HANDLE FILES -------------------
             # --- FILE UPLOAD ---
             files = request.files.getlist("fileinput")
