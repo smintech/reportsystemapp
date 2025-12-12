@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-document.getElementById("submitbtn").addEventListener("click", function (e) {
+document.getElementById("submitbtn").addEventListener("click", async function (e) {
     e.preventDefault();
 
     const categoryGroup = document.getElementById("category-group").value;
@@ -89,7 +89,9 @@ document.getElementById("submitbtn").addEventListener("click", function (e) {
     const details = document.getElementById("report").value;
     const evidenceInput = document.getElementById("evidence"); // FIXED
     const reporterEmail = document.getElementById("reporter_email").value.trim();
-
+    const uploadedUrlsInput = document.getElementById("uploaded_urls");
+    const fileInput = document.getElementById("fileinput");
+    
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
         return;
@@ -111,7 +113,29 @@ document.getElementById("submitbtn").addEventListener("click", function (e) {
             return;
         }
     }
-
+    
+    const files = fileInput.files;
+    const cloudUrls = [];
+    
+    for (let file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'evidence_uploads');
+        
+        try {
+            const res = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            cloudUrls.push(data.secure_url);
+        } catch (err) {
+            console.error('Upload failed', err);
+            alert('File upload failed: ' + file.name);
+            return; // stop submission if any file fails
+        }
+    }
+    
     const formData = new FormData();
     formData.append("category_group", categoryGroup);
     formData.append("options_group", categoryItem);
@@ -120,29 +144,23 @@ document.getElementById("submitbtn").addEventListener("click", function (e) {
     if (evidenceInput && evidenceInput.value.trim() !== "") {
         formData.append("evidence", evidenceInput.value.trim());
     }
-
-    const files = document.getElementById("fileinput").files;
-    for (let f of files) {
-        formData.append("fileinput", f);
+    for (let url of cloudUrls) {
+        formData.append("fileinput", url);
     }
-
-    fetch("/", {
-        method: "POST",
-        body: formData
-    })
-    .then(async res => {
+    
+    try {
+        const res = await fetch("/", { method: "POST", body: formData });
         if (!res.ok) {
             const text = await res.text();
-            console.log("Server error:", text);  // DEBUG
+            console.error("Server error:", text);
             alert("Server error: " + res.status);
             return;
         }
-        window.location.reload();
-    })
-    .catch(err => {
-        alert("Error submitting report");
+        window.location.reload(); // reload page after success
+    } catch (err) {
         console.error(err);
-    });
+        alert("Error submitting report");
+    }
 });
 
 const fingerprintInput = document.getElementById('fingerprint');
