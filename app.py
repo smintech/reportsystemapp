@@ -572,14 +572,14 @@ def change_status_staff(rid):
         return redirect(url_for("staff_login"))
 
     status = request.form.get("status")
-    email = session.get("staff_email")
+    staff_id = session.get("staff_id")
 
     db = get_db()
     cur = db.cursor()
     # Only allow staff to update assigned reports
     cur.execute("SELECT assigned_staff_id FROM reports WHERE id=%s", (rid,))
     report = cur.fetchone()
-    if not report or report[0] != email:
+    if not report or report[0] != staff_id:
         flash("You are not assigned to this report!", "error")
         cur.close()
         return redirect(url_for("staff_dashboard"))
