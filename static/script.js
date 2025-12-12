@@ -88,6 +88,7 @@ document.getElementById("submitbtn").addEventListener("click", function (e) {
     const categoryItem = document.getElementById("options-group").value;
     const details = document.getElementById("report").value;
     const evidenceInput = document.getElementById("evidence"); // FIXED
+    const reporterEmail = document.getElementById("reporter_email").value.trim();
 
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
@@ -98,7 +99,10 @@ document.getElementById("submitbtn").addEventListener("click", function (e) {
         alert("Enter at least 20 characters.");
         return;
     }
-
+    
+    if (reporterEmail) {
+    formData.append("reporter_email", reporterEmail);
+    }
     // Validate evidence URL BEFORE submitting
     if (evidenceInput && evidenceInput.value.trim().length > 0) {
         const urlPattern = /^(https?:\/\/)[\w.-]+\.[a-z]{2,}(\/.*)?$/i;
