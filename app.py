@@ -146,29 +146,22 @@ def home():
             # --- FILE UPLOAD ---
             files = request.files.getlist("fileinput")
             uploaded_urls = []
-            evidence_str = None
-            if files:
-                for file in files:
-                    if file and allowed_file(file.filename):
-                        upload_result = cloudinary.uploader.upload(
-                        file,
-                        resource_type="auto"
-                        )
-                        uploaded_urls.append(upload_result["secure_url"])
-
+            
+            for file in files:
+                if file and allowed_file(file.filename):
+                    upload_result = cloudinary.uploader.upload(file, resource_type="auto")
+                    uploaded_urls.append(upload_result["secure_url"])
             # Combine file names or use evidence_link
             evidence_list = uploaded_urls.copy()
             if evidence_link:
                 evidence_list.append(evidence_link)
             evidence_json = json.dumps(evidence_list)
-
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
                 (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
             """, (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_json))
-            
             db.commit()
 
             # ------------------- SEND RESPONSE + COOKIE -------------------
