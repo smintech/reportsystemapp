@@ -576,7 +576,7 @@ def change_status_staff(rid):
     role = session.get("staff_role")
 
     db = get_db()
-    cur = db.cursor()
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     # Only allow staff to update assigned reports
     cur.execute("SELECT assigned_staff_id FROM reports WHERE id=%s", (rid,))
     report = cur.fetchone()
