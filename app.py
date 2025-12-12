@@ -580,7 +580,7 @@ def change_status_staff(rid):
     # Only allow staff to update assigned reports
     cur.execute("SELECT assigned_staff_id FROM reports WHERE id=%s", (rid,))
     report = cur.fetchone()
-    if not report or (report['assigned_staff_id'] != staff_id role and != "vdmratelking"):
+    if not report or (report['assigned_staff_id'] != staff_id and role != "vdmratelking"):
         flash("You are not assigned to this report!", "error")
         cur.close()
         return redirect(url_for("staff_dashboard"))
