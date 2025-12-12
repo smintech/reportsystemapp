@@ -305,32 +305,28 @@
                     <td colspan="5">
                         <div class="evidence-box">
 {% for report in reports %}
-    {% set evidence = report.evidence_parsed %}
-    {% if evidence.files %}
-        <h4>Uploaded Files:</h4>
-        <ul>
-            {% for f in evidence.files %}
+        {% set evidence = report.evidence_parsed %}
+        {% if evidence.files %}
+            <ul>
+            {% for item in evidence.files %}
                 <li>
-                    {% if f.value.startswith('http') %}
-                        <a href="{{ f.value }}" target="_blank">
-                            {{ f.value }}
-                        </a>
-                    {% else %}
-                            Download {{ f.value }}
-                    {% endif %}
+                    <a href="{{ item.value }}" target="_blank">
+                        {% if item.value.endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
+                            File #{{ item.id }}
+                        {% else %}
+                            Link #{{ item.id }}
+                        {% endif %}
+                    </a>
                 </li>
             {% endfor %}
-        </ul>
-        
-    {% elif evidence.single %}
-        <h4>Uploaded File:</h4>
-            Download {{ evidence.single }}
-    {% elif evidence.link %}
-        <h4>Evidence Link:</h4>
-            {{ evidence.link }}
-    {% else %}
-        <p>No evidence submitted.</p>
-    {% endif %}
+            </ul>
+        {% elif evidence.single %}
+            <a href="{{ evidence.single }}" target="_blank">View File</a>
+        {% elif evidence.link %}
+            <a href="{{ evidence.link }}" target="_blank">View Link</a>
+        {% else %}
+            No evidence submitted
+        {% endif %}
 {% endfor %}
                         </div>
                     </td>
