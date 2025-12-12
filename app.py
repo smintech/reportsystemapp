@@ -214,26 +214,28 @@ def parse_evidence(evidence_value):
 
     # Convert JSON string to Python object
     try:
-        evidence_list = json.loads(evidence_value)  # evidence_value is JSONB from DB
+        if isinstance(evidence_value, str):
+            evidence_list = json.loads(evidence_value.replace("'", '"'))
+        else:
+            evidence_list = evidence_value
     except (TypeError, json.JSONDecodeError):
         # fallback if somehow string is stored
         evidence_list = [evidence_value]
-
-    # If empty list
-    if not evidence_list:
-        return {"files": None, "link": None, "single": None}
-
-    # Only one item
-    if len(evidence_list) == 1:
-        item = evidence_list[0]
+    files = []
+    link = None
+    
+    for idx, item in enumerate(evidence_list):
         if str(item).startswith("http"):
-            return {"files": None, "link": item, "single": None}
+            link = str(item)
         else:
-            return {"files": None, "link": None, "single": item}
-
+            files.append({"id": idx + 1, "value": str(item)})
+            
+    if len(files) == 1 and not link:
+        single = files[0]["value"]
+    else:
+        single = None
     # Multiple items
-    files_with_id = [{"id": idx + 1, "value": v} for idx, v in enumerate(evidence_list)]
-    return {"files": files_with_id, "link": None, "single": None}
+    return {"files": files if files else None, "link": link, "single": single}
     
 def adminonly(f):
     @wraps(f)
