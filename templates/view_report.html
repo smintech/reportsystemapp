@@ -165,29 +165,27 @@ a.back-link:hover {
     <p><strong>Details:</strong> {{ report.details }}</p>
 
     <p><strong>Evidence:</strong></p>
-{% if report.evidence_list %}
-    {# Display uploaded files if any #}
-    {% if report.evidence_list.files %}
-        {% for item in report.evidence_list.files %}
-            {% if item.value.startswith('http') %}
-                <p><strong>#{{ item.id }} Link:</strong>
-                    <a href="{{ item.value }}" target="_blank">{{ item.value }}</a>
-                </p>
-            {% else %}
-                <p><strong>#{{ item.id }} File:</strong>
-                </p>
-            {% endif %}
-        {% endfor %}
-    {% elif report.evidence_list.single %}
-        <p><strong>File:</strong>
-        </p>
-    {% endif %}
-    {# Display external link if any, independent of files #}
-    {% if report.evidence_list.link %}
-        <p><strong>External Link:</strong>
-            <a href="{{ report.evidence_list.link }}" target="_blank">{{ report.evidence_list.link }}</a>
-        </p>
-    {% endif %}
+{% set evidence = report.evidence_parsed %}
+
+{% if evidence.files %}
+    <h4>Evidence:</h4>
+    <ul>
+    {% for item in evidence.files %}
+        <li>
+            <a href="{{ item.value }}" target="_blank">
+                {% if item.value.endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
+                    #{{ item.id }} File
+                {% else %}
+                    #{{ item.id }} Link
+                {% endif %}
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+{% elif evidence.single %}
+    <a href="{{ evidence.single }}" target="_blank">View File</a>
+{% elif evidence.link %}
+    <a href="{{ evidence.link }}" target="_blank">View Link</a>
 {% else %}
     <p>No evidence submitted.</p>
 {% endif %}
