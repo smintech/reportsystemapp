@@ -148,7 +148,8 @@ def home():
             if files:
                 report_folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
                 os.makedirs(report_folder, exist_ok=True)
-
+                
+                saved_files = []
                 for file in files:
                     if file and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
@@ -157,7 +158,7 @@ def home():
                         saved_files.append(filename)
 
             # Combine file names or use evidence_link
-            evidence_list = saved_files if saved_files else []
+            evidence_list = saved_files.copy()
             if evidence_link:
                 evidence_list.append(evidence_link)
             evidence_json = json.dumps(evidence_list)
