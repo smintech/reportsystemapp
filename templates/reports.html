@@ -220,7 +220,7 @@ td form {
             <td>{{ r.tracking_id }}</td>
             <td>{{ r.category }}</td>
             <td>{{ r.details }}</td>
-            <td>{{ r.evidence }}</td>
+            <td>{{ r.evidence_parsed|safe }}</td>
             <td>{{ r.status }}</td>
             <td>{{ r.reporter_email }}</td>
             <td>{{ r.anon_id }}</td>
