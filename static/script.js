@@ -87,12 +87,11 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
     const categoryGroup = document.getElementById("category-group").value;
     const categoryItem = document.getElementById("options-group").value;
     const details = document.getElementById("report").value;
-    const evidenceInput = document.getElementById("evidence"); // FIXED
+    const evidenceInput = document.getElementById("evidence");
     const reporterEmail = document.getElementById("reporter_email").value.trim();
     const uploadedUrlsInput = document.getElementById("uploaded_urls");
     const fileInput = document.getElementById("fileinput");
-    uploadedUrlsInput.value = JSON.stringify(cloudUrls);
-    
+
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
         return;
@@ -102,62 +101,78 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
         alert("Enter at least 20 characters.");
         return;
     }
-    
-    if (reporterEmail) {
-    formData.append("reporter_email", reporterEmail);
-    }
-    // Validate evidence URL BEFORE submitting
-    if (evidenceInput && evidenceInput.value.trim().length > 0) {
+
+    if (evidenceInput && evidenceInput.value.trim()) {
         const urlPattern = /^(https?:\/\/)[\w.-]+\.[a-z]{2,}(\/.*)?$/i;
         if (!urlPattern.test(evidenceInput.value.trim())) {
             alert("Evidence must be a valid URL (starting with http:// or https://).");
             return;
         }
     }
-    
-    const files = fileInput.files;
-    const cloudUrls = [];
-    
-    for (let file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'evidence_uploads');
-        
+
+    const files = Array.from(fileInput.files);
+    let cloudUrls = [];
+
+    /* ---------- UPLOAD FILES TO CLOUDINARY ---------- */
+    if (files.length > 0) {
         try {
-            const res = await fetch('https://api.cloudinary.com/v1_1/dowpqktts/upload', {
-                method: 'POST',
-                body: formData
+            const uploadPromises = files.map(file => {
+                const fd = new FormData();
+                fd.append("file", file);
+                fd.append("upload_preset", "evidence_uploads");
+
+                return fetch("https://api.cloudinary.com/v1_1/dowpqktts/upload", {
+                    method: "POST",
+                    body: fd
+                }).then(res => res.json());
             });
-            const data = await res.json();
-            cloudUrls.push(data.secure_url);
+
+            const results = await Promise.all(uploadPromises);
+
+            cloudUrls = results
+                .filter(r => r.secure_url)
+                .map(r => r.secure_url);
+
         } catch (err) {
-            console.error('Upload failed', err);
-            alert('File upload failed: ' + file.name);
-            return; // stop submission if any file fails
+            console.error("Upload failed", err);
+            alert("One or more file uploads failed");
+            return;
         }
     }
-    
+
+    /* ---------- ADD EVIDENCE LINK ---------- */
+    if (evidenceInput && evidenceInput.value.trim()) {
+        cloudUrls.push(evidenceInput.value.trim());
+    }
+
+    uploadedUrlsInput.value = JSON.stringify(cloudUrls);
+
+    /* ---------- FINAL FORM SUBMISSION ---------- */
     const formData = new FormData();
     formData.append("category_group", categoryGroup);
     formData.append("options_group", categoryItem);
     formData.append("details", details);
+    formData.append("uploaded_urls", uploadedUrlsInput.value);
 
-    if (evidenceInput && evidenceInput.value.trim() !== "") {
-        formData.append("evidence", evidenceInput.value.trim());
+    if (reporterEmail) {
+        formData.append("reporter_email", reporterEmail);
     }
-    for (let url of cloudUrls) {
-        formData.append("fileinput", url);
-    }
-    
+
     try {
-        const res = await fetch("/", { method: "POST", body: formData });
+        const res = await fetch("/", {
+            method: "POST",
+            body: formData
+        });
+
         if (!res.ok) {
             const text = await res.text();
             console.error("Server error:", text);
             alert("Server error: " + res.status);
             return;
         }
-        window.location.reload(); // reload page after success
+
+        window.location.reload();
+
     } catch (err) {
         console.error(err);
         alert("Error submitting report");
