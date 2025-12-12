@@ -304,37 +304,28 @@
     <!-- ===== EVIDENCE PREVIEW SECTION ===== -->
 <div class="evidence-box">
 {% for report in reports %}
-    {% set evidence = report.evidence_parsed %}
-
-    {% if evidence.files %}
-        <h4>Uploaded Files:</h4>
-        <ul>
-            {% for f in evidence.files %}
+        {% set evidence = report.evidence_parsed %}
+        {% if evidence.files %}
+            <ul>
+            {% for item in evidence.files %}
                 <li>
-                    {% if f.value.startswith('http') %}
-                        <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=f.value) }}" target="_blank">Open Link {{ f.id }}</a>
-                    {% else %}
-                            Download {{ f.value }}
-                        </a>
-                    {% endif %}
+                    <a href="{{ item.value }}" target="_blank">
+                        {% if item.value.endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
+                            File #{{ item.id }}
+                        {% else %}
+                            Link #{{ item.id }}
+                        {% endif %}
+                    </a>
                 </li>
             {% endfor %}
-        </ul>
-
-    {% if evidence.single.startswith('http') %}
-        <a href="{{ evidence.single }}" target="_blank">Open Link</a>
-    {% else %}
-        <h4>Uploaded File:</h4>
-            Download {{ evidence.single }}
-    {% endif %}
-    {% elif evidence.link %}
-        <h4>Evidence Link:</h4>
-        <a href="{{ evidence.link }}" target="_blank">
-            {{ evidence.link }}
-        </a>
-    {% else %}
-        <p>No evidence submitted.</p>
-    {% endif %}
+            </ul>
+        {% elif evidence.single %}
+            <a href="{{ evidence.single }}" target="_blank">View File</a>
+        {% elif evidence.link %}
+            <a href="{{ evidence.link }}" target="_blank">View Link</a>
+        {% else %}
+            No evidence submitted
+        {% endif %}
 {% endfor %}
 </div>
 </div>
