@@ -165,18 +165,18 @@ a.back-link:hover {
     <p><strong>Details:</strong> {{ report.details }}</p>
 
     <p><strong>Evidence:</strong></p>
-    {% if evidence_list %}
-        {% for item in evidence_list %}
-           {% if item.startswith('http') %}
-        <pre><a href="{{ item }}" target="_blank">{{ item }}</a></pre>
+    {% if report.evidence_list %}
+        {% for item in report.evidence_list %}
+            {% if item.startswith('http') %}
+                <pre><a href="{{ item }}" target="_blank">{{ item }}</a></pre>
+            {% else %}
+                <pre><a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item) }}" target="_blank">{{ item }}</a></pre>
+            {% endif %}
+       {% endfor %}
     {% else %}
-        <pre><a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item) }}" target="_blank">{{ item }}</a></pre>
-           {% endif %}
-        {% endfor %}
-    {% else %}
-        <p>No evidence submitted.</p>
-    <p><strong>Assigned To:</strong> {{ report.assigned_staff_id if report.assigned_staff_id else "Not assigned" }}</p>
+    <p>No evidence submitted.</p>
     {% endif %}
+<p><strong>Assigned To:</strong> {{ report.assigned_staff_id if report.assigned_staff_id else "Not assigned" }}</p>
 </div>
 
 <div class="card">
