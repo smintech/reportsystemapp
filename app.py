@@ -393,6 +393,7 @@ def staff_login():
                 session["staff_logged_in"] = True
                 session["staff_role"] = user["role"]
                 session["staff_email"] = user["email"]
+                session["staff_id"] = user["id"]
                 session.permanent = True if remember else False
                 flash(f"Welcome {user['role'].capitalize()}!", "success")
                 return redirect(url_for("staff_dashboard"))
@@ -478,18 +479,18 @@ def reports_page():
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC")
-    reports = dict(cur.fetchall())
-    for report in reports:
-        if report['evidence']:  # if evidence dey
-            report['evidence_list'] = json.loads(report['evidence'])
-        else:
-            report['evidence_list'] = []
+    reports = cur.fetchall()
+    reports_list = []
+    for r in reports:
+        r = dict(r)
+        r['evidence_parsed'] = parse_evidence(r['evidence'])
+        reports_list.append(r)
 
     cur.execute("SELECT email, role FROM users")
     users = cur.fetchall()
 
     cur.close()
-    return render_template("reports.html", reports=reports, users=users)
+    return render_template("reports.html", reports=reports_list, users=users)
     
 @app.post("/assign/<int:rid>")
 @adminonly
