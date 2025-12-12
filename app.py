@@ -93,25 +93,25 @@ def get_or_create_cookie_uuid(cur):
     - anon_id_for_db → integer, stored in DB (matches table constraint)
     - anon_cookie → UUID string, stored in browser cookie
     """
-    anon_cookie = request.cookies.get("anon_id")
-    if anon_cookie:
+    cookie_uuid = request.cookies.get("anon_id")
+    if cookie_uuid:
         # Try to find the corresponding anon_id in DB (last report)
         cur.execute("""
             SELECT anon_id FROM reports 
             WHERE cookie_uuid =%s 
             ORDER BY created_at DESC LIMIT 1
-        """,(anon_cookie,))
+        """,(cookie_uuid,))
         
         row = cur.fetchone()
         if row:
-            return row["anon_id"], anon_cookie
+            return row["anon_id"], cookie_uuid
             
         return random.randint(100000, 999999), anon_cookie
 
     # No cookie → create new integer ID for DB and UUID for cookie
     anon_id = random.randint(100000, 999999)
-    anon_cookie = str(uuid.uuid4())
-    return anon_id, anon_cookie
+    cookie_uuid = str(uuid.uuid4())
+    return anon_id, cookie_uuid
     
 @app.route("/", methods=["GET", "POST"])
 def home():
