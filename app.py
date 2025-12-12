@@ -186,7 +186,18 @@ def home():
     
 @app.route("/evidence/<tracking_id>/<filename>")
 def get_evidence(tracking_id, filename):
-    return send_from_directory(os.path.join(UPLOAD_FOLDER, tracking_id), filename)
+    
+    if filename.startswith("http"):
+        return "External links cannot be downloaded.", 400
+    
+    filename = filename.replace("%20", " ").replace(",", "").strip()
+    
+    folder = os.path.join(app.config["UPLOAD_FOLDER"], tracking_id)
+    
+    if not os.path.exists(os.path.join(folder, filename)):
+        return f"File not found: {filename}", 404
+        
+    return send_from_directory(folder, filename)
 
 def delete_expired_files(tracking_id, updated_at, days=30):
     """
@@ -607,9 +618,6 @@ def view_report(rid):
         
     report = dict(row)
     report['evidence_list'] = parse_evidence(report['evidence'])
-    
-    print("Raw evidence from DB:", report['evidence'])
-    print("Parsed evidence:", report['evidence_list'])
     
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
