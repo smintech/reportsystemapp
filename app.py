@@ -478,7 +478,7 @@ def reports_page():
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC")
-    reports = cur.fetchall()
+    reports = dict(cur.fetchall())
     for report in reports:
         if report['evidence']:  # if evidence dey
             report['evidence_list'] = json.loads(report['evidence'])
@@ -596,19 +596,17 @@ def view_report(rid):
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     cur.execute("SELECT * FROM reports WHERE id=%s", (rid,))
-    report = cur.fetchone()
+    row = cur.fetchone()
+    if not row:
+        flash("Report not found.", "error")
+        return redirect(url_for("home"))
+        
+    report = dict(row)
     report['evidence_list'] = parse_evidence(report['evidence'])
 
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
     
-    evidence_list = []
-    if report["evidence"]:
-        try:
-            evidence_list = json.loads(report["evidence"])
-        except:
-            evidence_list = []
-
     cur.close()
     return render_template("view_report.html", report=report, notes=notes)
     
