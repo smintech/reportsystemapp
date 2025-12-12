@@ -86,7 +86,12 @@ def init_db():
     
     db.commit()
     cur.close()
-    
+def generate_unique_anon_id(cur):
+    while True:
+        anon_id = random.randint(100000, 999999)
+        cur.execute("SELECT 1 FROM reports WHERE anon_id = %s LIMIT 1", (anon_id,))
+        if not cur.fetchone():
+            return anon_id
 def get_or_create_cookie_uuid(cur):
     """
     Returns a tuple: (anon_id:int, cookie_uuid:str)
@@ -102,15 +107,14 @@ def get_or_create_cookie_uuid(cur):
         """, (cookie_uuid,))
         row = cur.fetchone()
         if row:
-            anon_id = row["anon_id"]
-            return anon_id, cookie_uuid
+            return row["anon_id"], cookie_uuid
         else:
             # Cookie exists but no previous report → create new anon_id
-            anon_id = random.randint(100000, 999999)
+            anon_id = generate_unique_anon_id(cur)
             return anon_id, cookie_uuid
 
     # No cookie → create new anon_id and cookie UUID
-    anon_id = random.randint(100000, 999999)
+    anon_id = generate_unique_anon_id(cur)
     cookie_uuid = str(uuid.uuid4())
     return anon_id, cookie_uuid
     
@@ -134,15 +138,7 @@ def home():
 
             # Get anon cookie or create new one
             anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
-            cur.execute("""
-                SELECT tracking_id FROM reports
-                WHERE anon_id = %s AND status IN ('Pending','In Progress')
-                ORDER BY created_at DESC LIMIT 1
-            """, (anon_id,))
-            row = cur.fetchone()
-            active_tracking = row["tracking_id"] if row else None
-
-            tracking_id = active_tracking if active_tracking else str(uuid.uuid4())
+            tracking_id = str(uuid.uuid4())
             # ------------------- HANDLE FILES -------------------
             # --- FILE UPLOAD ---
             files = request.files.getlist("fileinput")
