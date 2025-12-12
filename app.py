@@ -186,7 +186,7 @@ def home():
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
-                (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
+                (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
             """, (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_json))
             
