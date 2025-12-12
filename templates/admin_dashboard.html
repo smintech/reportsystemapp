@@ -311,25 +311,30 @@
         <ul>
             {% for f in evidence.files %}
                 <li>
-                    <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=f.value) }}" target="_blank">
-                        Download {{ f.value }}
-                    </a>
+                    {% if f.value.startswith('http') %}
+                        <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=f.value) }}" target="_blank">Open Link {{ f.id }}</a>
+                    {% else %}
+                        <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=f.value) }}" target="_blank">
+                            Download {{ f.value }}
+                        </a>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
 
-    {% elif evidence.single %}
+    {% if evidence.single.startswith('http') %}
+        <a href="{{ evidence.single }}" target="_blank">Open Link</a>
+    {% else %}
         <h4>Uploaded File:</h4>
         <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=evidence.single) }}" target="_blank">
             Download {{ evidence.single }}
         </a>
-
+    {% endif %}
     {% elif evidence.link %}
         <h4>Evidence Link:</h4>
         <a href="{{ evidence.link }}" target="_blank">
             {{ evidence.link }}
         </a>
-
     {% else %}
         <p>No evidence submitted.</p>
     {% endif %}
