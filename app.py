@@ -597,6 +597,7 @@ def view_report(rid):
 
     cur.execute("SELECT * FROM reports WHERE id=%s", (rid,))
     report = cur.fetchone()
+    report['evidence_list'] = parse_evidence(report['evidence'])
 
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
