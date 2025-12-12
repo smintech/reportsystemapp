@@ -175,19 +175,11 @@ a.back-link:hover {
                 </p>
             {% else %}
                 <p><strong>#{{ item.id }} File:</strong>
-                    <a href="{{ url_for('get_evidence',
-                        tracking_id=report.tracking_id,
-                        filename=item.value|replace("'", "")|replace("[", "")|replace("]", "")
-                    ) }}" target="_blank">{{ item.value }}</a>
                 </p>
             {% endif %}
         {% endfor %}
     {% elif report.evidence_list.single %}
         <p><strong>File:</strong>
-            <a href="{{ url_for('get_evidence',
-                tracking_id=report.tracking_id,
-                filename=report.evidence_list.single|replace("'", "")|replace("[", "")|replace("]", "")
-            ) }}" target="_blank">{{ report.evidence_list.single }}</a>
         </p>
     {% endif %}
     {# Display external link if any, independent of files #}
