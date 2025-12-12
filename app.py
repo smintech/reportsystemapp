@@ -478,6 +478,11 @@ def reports_page():
 
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC")
     reports = cur.fetchall()
+    for report in reports:
+        if report['evidence']:  # if evidence dey
+            report['evidence_list'] = json.loads(report['evidence'])
+        else:
+            report['evidence_list'] = []
 
     cur.execute("SELECT email, role FROM users")
     users = cur.fetchall()
