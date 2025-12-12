@@ -106,7 +106,7 @@ def home():
                 return redirect(url_for("home"))
 
             # Get anon cookie or create new one
-            cookie_uuid = get_or_create_cookie_uuid()   # always UUID
+            cookie_uuid = get_or_create_cookie_uuid(cur)   # always UUID
             anon_id = request.cookies.get("anon_id")
             if not anon_id:
                 anon_id = random.randint(100000, 999999)
