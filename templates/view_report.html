@@ -173,8 +173,7 @@ a.back-link:hover {
             </p>
         {% else %}
             <p><strong>#{{ item.id }} File:</strong>
-                <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item.value) }}"
-                   target="_blank">{{ item.value }}</a>
+                <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item.value|replace("'", "")|replace("[", "")|replace("]", "")) }}"</a>
             </p>
         {% endif %}
     {% endfor %}
@@ -186,8 +185,7 @@ a.back-link:hover {
 
 {% elif report.evidence_list and report.evidence_list.single %}
     <p><strong>File:</strong>
-        <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=report.evidence_list.single) }}"
-           target="_blank">{{ report.evidence_list.single }}</a>
+                <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item.value|replace("'", "")|replace("[", "")|replace("]", "")) }}"</a>
     </p>
 
 {% else %}
