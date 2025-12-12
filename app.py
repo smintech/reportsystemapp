@@ -134,7 +134,8 @@ def home():
             options_group = request.form.get("options_group","").strip()
             details = request.form.get("details", "").strip()
             evidence_link = request.form.get("evidence") or None  # link text input
-
+            uploaded_urls_json = request.form.get("uploaded_urls")
+            
             if not category_group or not details:
                 flash("Category and details are required.", "error")
                 return redirect(url_for("home"))
@@ -144,13 +145,13 @@ def home():
             tracking_id = str(uuid.uuid4())
             # ------------------- HANDLE FILES -------------------
             # --- FILE UPLOAD ---
-            files = request.files.getlist("fileinput")
-            uploaded_urls = []
-            
-            for file in files:
-                if file and allowed_file(file.filename):
-                    upload_result = cloudinary.uploader.upload(file, resource_type="auto")
-                    uploaded_urls.append(upload_result["secure_url"])
+            if uploaded_urls_json:
+                try:
+                    uploaded_urls = json.loads(uploaded_urls_json)
+                except json.JSONDecodeError:
+                    uploaded_urls = []
+            else:
+                uploaded_urls = []
             # Combine file names or use evidence_link
             evidence_list = uploaded_urls.copy()
             if evidence_link:
@@ -188,28 +189,22 @@ def parse_evidence(evidence_value):
 
     # Convert JSON string to Python object
     try:
-        if isinstance(evidence_value, str):
-            evidence_list = json.loads(evidence_value.replace("'", '"'))
-        else:
-            evidence_list = evidence_value
+        evidence_list = json.loads(evidence_value)
     except (TypeError, json.JSONDecodeError):
-        # fallback if somehow string is stored
         evidence_list = [evidence_value]
-    files = []
-    link = None
-    
-    for idx, item in enumerate(evidence_list):
-        if str(item).startswith("http"):
-            link = str(item)
+        # fallback if somehow string is stored
+    if not evidence_list:
+        return {"files": None, "link": None, "single": None}
+        
+    if len(evidence_list) == 1:
+        item = evidence_list[0]
+        if isinstance(item, str) and item.startswith("http"):
+            return {"files": None, "link": item, "single": None}
         else:
-            files.append({"id": idx + 1, "value": str(item)})
+            return {"files": None, "link": None, "single": item}
             
-    if len(files) == 1 and not link:
-        single = files[0]["value"]
-    else:
-        single = None
-    # Multiple items
-    return {"files": files if files else None, "link": link, "single": single}
+    files_with_id = [{"id": idx + 1, "value": v} for idx, v in enumerate(evidence_list)]
+    return {"files": files_with_id, "link": None, "single": None}
     
 def adminonly(f):
     @wraps(f)
