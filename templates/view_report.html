@@ -165,22 +165,31 @@ a.back-link:hover {
     <p><strong>Details:</strong> {{ report.details }}</p>
 
     <p><strong>Evidence:</strong></p>
-{% if report.evidence_list.files %}
+{% if report.evidence_list and report.evidence_list.files %}
     {% for item in report.evidence_list.files %}
         {% if item.value.startswith('http') %}
-            <p><strong>#{{ item.id }} Link:</strong> <a href="{{ item.value }}" target="_blank">{{ item.value }}</a></p>
+            <p><strong>#{{ item.id }} Link:</strong>
+                <a href="{{ item.value }}" target="_blank">{{ item.value }}</a>
+            </p>
         {% else %}
-            <p><strong>#{{ item.id }} File:</strong> 
-                <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item.value) }}" target="_blank">{{ item.value }}</a>
+            <p><strong>#{{ item.id }} File:</strong>
+                <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=item.value) }}"
+                   target="_blank">{{ item.value }}</a>
             </p>
         {% endif %}
     {% endfor %}
-{% elif report.evidence_list.link %}
-    <p><strong>Link:</strong> <a href="{{ report.evidence_list.link }}" target="_blank">{{ report.evidence_list.link }}</a></p>
-{% elif report.evidence_list.single %}
-    <p><strong>File:</strong> 
-        <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=report.evidence_list.single) }}" target="_blank">{{ report.evidence_list.single }}</a>
+
+{% elif report.evidence_list and report.evidence_list.link %}
+    <p><strong>Link:</strong>
+        <a href="{{ report.evidence_list.link }}" target="_blank">{{ report.evidence_list.link }}</a>
     </p>
+
+{% elif report.evidence_list and report.evidence_list.single %}
+    <p><strong>File:</strong>
+        <a href="{{ url_for('get_evidence', tracking_id=report.tracking_id, filename=report.evidence_list.single) }}"
+           target="_blank">{{ report.evidence_list.single }}</a>
+    </p>
+
 {% else %}
     <p>No evidence submitted.</p>
 {% endif %}
