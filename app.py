@@ -605,7 +605,10 @@ def view_report(rid):
         
     report = dict(row)
     report['evidence_list'] = parse_evidence(report['evidence'])
-
+    
+    print("Raw evidence from DB:", report['evidence'])
+    print("Parsed evidence:", report['evidence_list'])
+    
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
     
