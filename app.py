@@ -495,7 +495,6 @@ def reports_page():
 @adminonly
 def assign_to_user(rid):
     user_email = request.form.get("user_email")
-
     if not user_email:
         flash("Select a user to assign!", "error")
         return redirect(url_for("reports_page"))
@@ -672,7 +671,7 @@ def assign_to_other_staff(rid):
     db = get_db()
     cur = db.cursor()
     
-    cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+    cur.execute("SELECT id FROM users WHERE email=%s", (user_email,))
     row = cur.fetchone()
     if not row:
         flash("Staff not exist!", "error")
