@@ -106,7 +106,10 @@ def home():
                 return redirect(url_for("home"))
 
             # Get anon cookie or create new one
-            anon_id, anon_cookie = get_or_create_anon_cookie(cur)
+            cookie_uuid = get_or_create_cookie_uuid()   # always UUID
+            anon_id = request.cookies.get("anon_id")
+            if not anon_id:
+                anon_id = random.randint(100000, 999999)
             
             active_tracking = None
             if reporter_email:
@@ -119,23 +122,12 @@ def home():
                 if row:
                     active_tracking = row["tracking_id"]
 
-            if not active_tracking and fingerprint:
+            if not active_tracking and fingerprint and cookie_uuid:
                 cur.execute("""
                     SELECT tracking_id FROM reports
-                    WHERE anon_id = %s AND fingerprint = %s AND status IN ('Pending','In Progress')
+                    WHERE cookie_uuid = %s AND fingerprint = %s AND status IN ('Pending','In Progress')
                     ORDER BY created_at DESC LIMIT 1
-                """, (anon_id, fingerprint))
-                row = cur.fetchone()
-                if row:
-                    active_tracking = row["tracking_id"]
-                    
-            if not active_tracking:
-                cur.execute("""
-                SELECT tracking_id FROM reports
-                WHERE anon_id = %s
-                AND status IN ('Pending','In Progress')
-                ORDER BY created_at DESC LIMIT 1
-                """, (anon_id,))
+                """, (cookie_uuid, fingerprint))
                 row = cur.fetchone()
                 if row:
                     active_tracking = row["tracking_id"]
@@ -169,15 +161,16 @@ def home():
             cur.execute("""
                 INSERT INTO reports
                 (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            """, (anon_id, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_json))
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
+            """, (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_json))
             
             db.commit()
 
             # ------------------- SEND RESPONSE + COOKIE -------------------
             response = make_response(redirect(url_for("home")))
             expires = datetime(2038, 12, 19)
-            response.set_cookie("anon_id", anon_cookie, expires=expires, httponly=True, samesite="Lax")
+            response.set_cookie("cookie_uuid", cookie_uuid, expires=expires, httponly=True, samesite="Lax")
+            response.set_cookie("anon_id", str(anon_id), expires=expires, httponly=True, samesite="Lax")
 
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
             return response
@@ -188,21 +181,21 @@ def home():
 def get_or_create_anon_cookie(cur):
     """
     Returns a tuple: (anon_id_for_db:int, anon_cookie:str)
-    - anon_id_for_db → integer, stored in DB (matches table constraint)
-    - anon_cookie → UUID string, stored in browser cookie
     """
     anon_cookie = request.cookies.get("anon_id")
     if anon_cookie:
         # Try to find the corresponding anon_id in DB (last report)
         cur.execute("""
             SELECT anon_id FROM reports 
-            WHERE tracking_id IN (
-                SELECT tracking_id FROM reports ORDER BY created_at DESC LIMIT 1
-            )
-        """)
+            WHERE cookie_uuid =%s 
+            ORDER BY created_at DESC LIMIT 1
+        """,(anon_cookie,))
+        
         row = cur.fetchone()
-        anon_id = row["anon_id"] if row else random.randint(100000, 999999)
-        return anon_id, anon_cookie
+        if row:
+            return row["anon_id"], anon_cookie
+            
+        return random.randint(100000, 999999), anon_cookie
 
     # No cookie → create new integer ID for DB and UUID for cookie
     anon_id = random.randint(100000, 999999)
