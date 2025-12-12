@@ -204,7 +204,7 @@ def delete_expired_files(tracking_id, updated_at, days=30):
 def parse_evidence(evidence_value):
     """
     Returns a dict containing:
-      files → list of filenames or links
+      files → list of dicts {id, value} for multiple items
       link → first link if only one
       single → first file if only one
     """
@@ -231,7 +231,8 @@ def parse_evidence(evidence_value):
             return {"files": None, "link": None, "single": item}
 
     # Multiple items
-    return {"files": evidence_list, "link": None, "single": None}
+    files_with_id = [{"id": idx + 1, "value": v} for idx, v in enumerate(evidence_list)]
+    return {"files": files_with_id, "link": None, "single": None}
     
 def adminonly(f):
     @wraps(f)
