@@ -166,6 +166,7 @@ a.back-link:hover {
 
     <p><strong>Evidence:</strong></p>
 {% if report.evidence_list %}
+    {# Display uploaded files if any #}
     {% if report.evidence_list.files %}
         {% for item in report.evidence_list.files %}
             {% if item.value.startswith('http') %}
@@ -181,10 +182,6 @@ a.back-link:hover {
                 </p>
             {% endif %}
         {% endfor %}
-    {% elif report.evidence_list.link %}
-        <p><strong>Link:</strong>
-            <a href="{{ report.evidence_list.link }}" target="_blank">{{ report.evidence_list.link }}</a>
-        </p>
     {% elif report.evidence_list.single %}
         <p><strong>File:</strong>
             <a href="{{ url_for('get_evidence',
@@ -192,8 +189,12 @@ a.back-link:hover {
                 filename=report.evidence_list.single|replace("'", "")|replace("[", "")|replace("]", "")
             ) }}" target="_blank">{{ report.evidence_list.single }}</a>
         </p>
-    {% else %}
-        <p>No evidence submitted.</p>
+    {% endif %}
+    {# Display external link if any, independent of files #}
+    {% if report.evidence_list.link %}
+        <p><strong>External Link:</strong>
+            <a href="{{ report.evidence_list.link }}" target="_blank">{{ report.evidence_list.link }}</a>
+        </p>
     {% endif %}
 {% else %}
     <p>No evidence submitted.</p>
