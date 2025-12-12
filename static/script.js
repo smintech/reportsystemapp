@@ -91,6 +91,7 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
     const reporterEmail = document.getElementById("reporter_email").value.trim();
     const uploadedUrlsInput = document.getElementById("uploaded_urls");
     const fileInput = document.getElementById("fileinput");
+    uploadedUrlsInput.value = JSON.stringify(cloudUrls);
     
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
@@ -123,7 +124,7 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
         formData.append('upload_preset', 'evidence_uploads');
         
         try {
-            const res = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/upload', {
+            const res = await fetch('https://api.cloudinary.com/v1_1/dowpqktts/upload', {
                 method: 'POST',
                 body: formData
             });
