@@ -135,7 +135,7 @@ async function handleCloudinaryUpload(evidenceUrls, expectedFileCount) {
             script.onerror = () => reject(new Error("Failed to load Cloudinary widget"));
             document.head.appendChild(script);
         } else {
-            openWidget();
+          openWidget();
         }
 
         function openWidget() {
@@ -179,7 +179,8 @@ async function handleCloudinaryUpload(evidenceUrls, expectedFileCount) {
                 }
             );
             widget.open();
-        }
+    });
+    
 async function submitReport(evidenceUrls) {
     const formData = new FormData();
     formData.append("category_group", document.getElementById("category-group").value);
@@ -210,7 +211,7 @@ async function submitReport(evidenceUrls) {
         console.error("Submission failed:", err);
         alert("Failed to submit report. Please try again.");
     }
-}
+});
 
 const fingerprintInput = document.getElementById('fingerprint');
 if (fingerprintInput) {
@@ -256,6 +257,7 @@ document.querySelectorAll(".options-group li").forEach(option => {
         document.querySelector(".select-header").textContent = group + " → " + value;
     });
 });
+
 const erudaScript = document.createElement('script');
 erudaScript.src = 'https://cdn.jsdelivr.net/npm/eruda';
 erudaScript.onload = () => {
