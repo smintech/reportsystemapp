@@ -184,8 +184,9 @@ def parse_evidence(evidence_value):
       link → first link if only one
       single → first file if only one
     """
+    result = {"files": None, "link": None, "single": None}
     if not evidence_value:
-        return {"files": None, "link": None, "single": None}
+        return result
 
     # Convert JSON string to Python object
     try:
@@ -194,17 +195,18 @@ def parse_evidence(evidence_value):
         evidence_list = [evidence_value]
         # fallback if somehow string is stored
     if not evidence_list:
-        return {"files": None, "link": None, "single": None}
+        return result
         
     if len(evidence_list) == 1:
         item = evidence_list[0]
         if isinstance(item, str) and item.startswith("http"):
-            return {"files": None, "link": item, "single": None}
+            result["link"] = item
         else:
-            return {"files": None, "link": None, "single": item}
-            
+            result["single"] = item
+        return result
     files_with_id = [{"id": idx + 1, "value": v} for idx, v in enumerate(evidence_list)]
-    return {"files": files_with_id, "link": None, "single": None}
+    result["files"] = files_with_id
+    return result
     
 def adminonly(f):
     @wraps(f)
