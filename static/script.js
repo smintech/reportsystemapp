@@ -83,25 +83,23 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById("reportForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     console.log("FORM SUBMIT HANDLER FIRED");
-        
+
     const categoryGroup = document.getElementById("category-group").value;
     const categoryItem = document.getElementById("options-group").value;
     const details = document.getElementById("report").value;
     const evidenceInput = document.getElementById("evidence");
     const reporterEmail = document.getElementById("reporter_email").value.trim();
-    const uploadedUrlsInput = document.getElementById("uploaded_urls");
     const fileInput = document.getElementById("fileinput");
-    
+
+    // Basic validation
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
         return;
     }
-
     if (details.length < 20) {
         alert("Enter at least 20 characters.");
         return;
     }
-
     if (evidenceInput && evidenceInput.value.trim()) {
         const urlPattern = /^(https?:\/\/)[\w.-]+\.[a-z]{2,}(\/.*)?$/i;
         if (!urlPattern.test(evidenceInput.value.trim())) {
@@ -109,84 +107,112 @@ document.getElementById("reportForm").addEventListener("submit", async function(
             return;
         }
     }
-    
-const fileInput = document.getElementById('fileinput'); // Assuming you have a file input element
-  const files = Array.from(fileInput.files);
-  let uploadedUrls = [];
 
-  if (files.length > 0) {
-        const formData = new FormData();
-        files.forEach(file => formData.append("fileinput", file));
-        try {
-            const res = await fetch("/upload_github", {
-                method: "POST",
-                body: formData
-            });
-            const data = await res.json();
-            if (data.urls) uploadedUrls = data.urls;
+    let evidenceUrls = [];
 
-            // Now, 'uploadedUrls' contains the array of URLs from the server
-            console.log("Uploaded URLs:", uploadedUrls);
-            // Example: Send these URLs to another backend endpoint
-            // This assumes your backend has an endpoint like '/api/reports' that accepts a list of URLs
-            const reportData = {
-                // ... other report details like report_id, description, etc. ...
-                evidence_urls: uploadedUrls
-            };
-
-            const reportRes = await fetch("/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(reportData)
-            });
-            
-            const reportResult = await reportRes.json();
-            console.log("Report submission result:", reportResult);
-
-        } catch (err) {
-            console.error("File upload or report submission failed", err);
-            alert("Operation failed. Try again.");
-            return;
-        }
-    }
-    /* ---------- ADD EVIDENCE LINK ---------- */
+    // Add manual evidence URL if provided
     if (evidenceInput && evidenceInput.value.trim()) {
-        uploadedUrls.push(evidenceInput.value.trim());
+        evidenceUrls.push(evidenceInput.value.trim());
     }
-    /* ---------- FINAL FORM SUBMISSION ---------- */
+
+    // If there are files selected, open Cloudinary widget
+    if (fileInput.files && fileInput.files.length > 0) {
+        await handleCloudinaryUpload(evidenceUrls, fileInput.files.length);
+    }
+
+    // If no files or after uploads complete, submit to backend
+    await submitReport(evidenceUrls);
+});
+
+async function handleCloudinaryUpload(evidenceUrls, expectedFileCount) {
+    return new Promise((resolve, reject) => {
+        // Load Cloudinary script if not already loaded
+        if (!window.cloudinary) {
+            const script = document.createElement("script");
+            script.src = "https://widget.cloudinary.com/v2.0/global/all.js";
+            script.async = true;
+            script.onload = openWidget;
+            script.onerror = () => reject(new Error("Failed to load Cloudinary widget"));
+            document.head.appendChild(script);
+        } else {
+            openWidget();
+        }
+
+        function openWidget() {
+            let uploadedCount = 0;
+
+            const widget = window.cloudinary.createUploadWidget(
+                {
+                    cloudName: "dowpqktts",              // ← REPLACE
+                    uploadPreset: "evidence_uploads",      // ← REPLACE
+                    sources: ["local", "url", "camera", "dropbox", "google_drive"],
+                    multiple: true,
+                    maxFiles: expectedFileCount,            // Optional: limit to selected files
+                    cropping: false
+                },
+                (error, result) => {
+                    if (error) {
+                        console.error("Upload error:", error);
+                        alert("Upload failed. Please try again.");
+                        reject(error);
+                        return;
+                    }
+
+                    if (result.event === "success") {
+                        evidenceUrls.push(result.info.secure_url);
+                        uploadedCount++;
+                        console.log("Uploaded:", result.info.secure_url);
+                    }
+
+                    if (result.event === "close") {
+                        if (uploadedCount === 0) {
+                            // User closed without uploading anything
+                            if (confirm("You closed the upload window without uploading any files. Continue without images?")) {
+                                resolve();
+                            } else {
+                                reject(new Error("Upload cancelled"));
+                            }
+                        } else {
+                            resolve(); // Proceed with whatever was uploaded
+                        }
+                    }
+                }
+            );
+
+            widget.open();
+        }
+    });
+}
+
+async function submitReport(evidenceUrls) {
     const formData = new FormData();
-    formData.append("category_group", categoryGroup);
-    formData.append("options_group", categoryItem);
-    formData.append("details", details);
-    formData.append("uploaded_urls", uploadedUrlsInput.value);
-    if (reporterEmail) {
-        formData.append("reporter_email", reporterEmail);
+    formData.append("category_group", document.getElementById("category-group").value);
+    formData.append("options_group", document.getElementById("options-group").value);
+    formData.append("details", document.getElementById("report").value);
+    formData.append("uploaded_urls", JSON.stringify(evidenceUrls));
+
+    if (document.getElementById("reporter_email").value.trim()) {
+        formData.append("reporter_email", document.getElementById("reporter_email").value.trim());
     }
-    
-    console.log("SENDING TO BACKEND:", uploadedUrlsInput.value);
-    
+
+    console.log("Sending to backend:", evidenceUrls);
+
     try {
-        const res = await fetch("/", {
+        const res = await fetch("/", {  // Change "/" to your actual backend endpoint if different
             method: "POST",
             body: formData
         });
 
         if (!res.ok) {
             const text = await res.text();
-            console.error("Server error:", text);
-            alert("Server error: " + res.status);
-            return;
+            throw new Error(`Server error ${res.status}: ${text}`);
         }
-        
-        
+
         alert("Report submitted successfully!");
         window.location.reload();
-
     } catch (err) {
         console.error("Submission failed:", err);
-        alert("Failed to submit report. Try again.");
+        alert("Failed to submit report. Please try again.");
     }
 });
 
