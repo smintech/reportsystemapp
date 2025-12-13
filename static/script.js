@@ -131,8 +131,6 @@ document.getElementById("reportForm").addEventListener("submit", async function(
     if (evidenceInput && evidenceInput.value.trim()) {
         uploadedUrls.push(evidenceInput.value.trim());
     }
-    
-    uploadedUrlsInput.value = JSON.stringify(uploadedUrls);
     /* ---------- FINAL FORM SUBMISSION ---------- */
     const formData = new FormData();
     formData.append("category_group", categoryGroup);
