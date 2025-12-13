@@ -173,8 +173,8 @@ def home():
                     except Exception as e:
                         flash(f"Failed to upload {file.filename} to GitHub: {str(e)}", "error")
                         continue
-            # Combine previous uploaded_urls_json + newly uploaded GitHub URLs + evidence_link
-            uploaded_urls_input = request.form.get("uploaded_urls", "[]")
+            
+                uploaded_urls_input = request.form.get("uploaded_urls", "[]")
                 try:
                     parsed = json.loads(uploaded_urls_input)
                     if isinstance(parsed, list):
