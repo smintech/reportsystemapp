@@ -16,9 +16,39 @@ import json
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'mp4'}  # Extend as needed
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # <-- Replace with your PAT
+GITHUB_OWNER = "smintech"               # <-- Replace with your GitHub username
+GITHUB_REPO = "reportsystemapp"                    # <-- Replace with your repository name
+GITHUB_RELEASE_TAG = "report_uploads"
+
+def get_release_upload_url():
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    # Check if release exists
+    res = requests.get(
+        f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/tags/{GITHUB_RELEASE_TAG}",
+        headers=headers
+    )
+    if res.status_code == 404:
+        # Create release if not exists
+        data = {
+            "tag_name": GITHUB_RELEASE_TAG,
+            "name": GITHUB_RELEASE_TAG,
+            "body": "Auto-uploaded reports",
+            "draft": False,
+            "prerelease": False
+        }
+        res = requests.post(
+            f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases",
+            json=data,
+            headers=headers
+        )
+        res.raise_for_status()
+    else:
+        res.raise_for_status()
+    
+    release_data = res.json()
+    upload_url = release_data["upload_url"].split("{")[0]  # strip template
+    return upload_url
     
 RATEL_DB_URL = os.getenv("DATABASE_URL")
 def get_db():
@@ -126,34 +156,39 @@ def home():
             options_group = request.form.get("options_group","").strip()
             details = request.form.get("details", "").strip()
             evidence_link = request.form.get("evidence") or None  # link text input
-            uploaded_urls_json = json.loads(request.form.get("uploaded_urls", "[]"))
             
-            print("Uploaded URLs:", uploaded_urls_json)
             
             if not category_group or not details:
                 flash("Category and details are required.", "error")
                 return redirect(url_for("home"))
-
-            # Get anon cookie or create new one
-            anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
-            tracking_id = str(uuid.uuid4())
             # ------------------- HANDLE FILES -------------------
             # --- FILE UPLOAD ---
+            uploaded_urls = []
+            uploaded_files = request.files.getlist("evidence_files")
+            for file in uploaded_files:
+                if file and file.filename:
+                    try:
+                        url = upload_file_to_github(file)  # helper function
+                        uploaded_urls.append(url)
+                    except Exception as e:
+                        flash(f"Failed to upload {file.filename} to GitHub: {str(e)}", "error")
+                        continue
+            # Combine previous uploaded_urls_json + newly uploaded GitHub URLs + evidence_link
             if uploaded_urls_json:
                 try:
                     parsed = json.loads(uploaded_urls_json)
-                    
                     if isinstance(parsed, list):
-                        uploaded_urls = [url for url in parsed if isinstance(url, str) and url.strip()]
-                    else:
-                        uploaded_urls = []
+                        for url in parsed:
+                            if isinstance(url, str) and url.strip():
+                                uploaded_urls.append(url)
                 except json.JSONDecodeError:
-                    uploaded_urls = []
-            # Combine file names or use evidence_link
-            evidence_list = uploaded_urls.copy()
+                    pass
             if evidence_link:
-                evidence_list.append(evidence_link)
-            evidence_json = json.dumps(evidence_list)
+                uploaded_urls.append(evidence_link)
+                
+            anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
+            tracking_id = str(uuid.uuid4())
+            evidence_json = json.dumps(uploaded_urls)
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
@@ -179,6 +214,22 @@ def home():
             print("Uploaded URLs:", evidence_json)
         # ------------------- GET REQUEST -------------------
         return render_template("index.html", tracking_id=tracking_id)
+
+@app.route("/upload_github", methods=["POST"])
+def upload_github():
+    files = request.files.getlist("fileinput")
+    if not files:
+        return jsonify({"error": "No files provided"}), 400
+
+    uploaded_urls = []
+    for file in files:
+        try:
+            url = upload_file_to_github(file)
+            uploaded_urls.append(url)
+        except Exception as e:
+            return jsonify({"error": f"Failed to upload {file.filename}: {str(e)}"}), 500
+
+    return jsonify({"urls": uploaded_urls})
     
 def parse_evidence(evidence_value):
     """
