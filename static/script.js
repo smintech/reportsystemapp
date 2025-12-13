@@ -129,9 +129,13 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
 
             const results = await Promise.all(uploadPromises);
 
-            cloudUrls = results
-                .filter(r => r.secure_url)
-                .map(r => r.secure_url);
+            results.forEach(r => {
+                if (r.secure_url) {
+                      cloudUrls.push(r.secure_url);
+                } else {
+                      console.warn("File upload failed or no secure_url:", r);
+                }
+            });
 
         } catch (err) {
             console.error("Upload failed", err);
@@ -139,13 +143,15 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
             return;
         }
     }
-
+    
+    console.log("Cloudinary upload results:", results);
     /* ---------- ADD EVIDENCE LINK ---------- */
     if (evidenceInput && evidenceInput.value.trim()) {
         cloudUrls.push(evidenceInput.value.trim());
     }
 
     uploadedUrlsInput.value = JSON.stringify(cloudUrls);
+    console.log("Final uploaded_urls value:", uploadedUrlsInput.value);
 
     /* ---------- FINAL FORM SUBMISSION ---------- */
     const formData = new FormData();
