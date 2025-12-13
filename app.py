@@ -134,7 +134,7 @@ def home():
             options_group = request.form.get("options_group","").strip()
             details = request.form.get("details", "").strip()
             evidence_link = request.form.get("evidence") or None  # link text input
-            uploaded_urls_json = request.form.get("uploaded_urls")
+            uploaded_urls_json = json.loads(request.form.get("uploaded_urls", "[]"))
             
             print("Uploaded URLs:", uploaded_urls_json)
             
