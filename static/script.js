@@ -242,13 +242,3 @@ document.querySelectorAll(".options-group li").forEach(option => {
         document.querySelector(".select-header").textContent = group + " → " + value;
     });
 });
-// Load Eruda safely after your own JS has started
-const erudaScript = document.createElement('script');
-erudaScript.src = 'https://cdn.jsdelivr.net/npm/eruda';
-erudaScript.onload = () => {
-    if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        eruda.init();
-        console.log("Eruda initialized");
-    }
-};
-document.body.appendChild(erudaScript);
