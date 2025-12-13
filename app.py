@@ -136,7 +136,7 @@ def home():
             evidence_link = request.form.get("evidence") or None  # link text input
             uploaded_urls_json = request.form.get("uploaded_urls")
             
-            print("Uploaded URLs:", uploaded_urls)
+            print("Uploaded URLs:", uploaded_urls_json)
             
             if not category_group or not details:
                 flash("Category and details are required.", "error")
