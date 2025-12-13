@@ -81,8 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-document.getElementById("submitbtn").addEventListener("click", async function (e) {
+document.getElementById("reportForm).addEventListener("submit", async function (e) {
     e.preventDefault();
+    console.log("JS LOADED");
 
     const categoryGroup = document.getElementById("category-group").value;
     const categoryItem = document.getElementById("options-group").value;
@@ -91,7 +92,7 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
     const reporterEmail = document.getElementById("reporter_email").value.trim();
     const uploadedUrlsInput = document.getElementById("uploaded_urls");
     const fileInput = document.getElementById("fileinput");
-
+    
     if (!categoryGroup || !categoryItem) {
         alert("Please select a category.");
         return;
