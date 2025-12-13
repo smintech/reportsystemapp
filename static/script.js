@@ -159,7 +159,7 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
     }
 
     try {
-        const res = await fetch("https://api.cloudinary.com/v1_1/dowpqktts/upload", {
+        const res = await fetch("/", {
             method: "POST",
             body: formData
         });
