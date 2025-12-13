@@ -178,12 +178,8 @@ async function handleCloudinaryUpload(evidenceUrls, expectedFileCount) {
                     }
                 }
             );
-
             widget.open();
         }
-    });
-}
-
 async function submitReport(evidenceUrls) {
     const formData = new FormData();
     formData.append("category_group", document.getElementById("category-group").value);
@@ -214,7 +210,7 @@ async function submitReport(evidenceUrls) {
         console.error("Submission failed:", err);
         alert("Failed to submit report. Please try again.");
     }
-});
+}
 
 const fingerprintInput = document.getElementById('fingerprint');
 if (fingerprintInput) {
