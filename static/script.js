@@ -81,12 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-document.addEventListener("DOMContentLoaded", () => {
+
     const form = document.getElementById("reportForm");
-    if (!form) {
-        console.error("Form not found!");
-        return;
+    if (!form) { console.error("Form not found!"); return; }
     }
+    
     form.addEventListener("submit", async function(e) {
         e.preventDefault();
         console.log("JS LOADED");
@@ -242,3 +241,12 @@ document.querySelectorAll(".options-group li").forEach(option => {
         document.querySelector(".select-header").textContent = group + " → " + value;
     });
 });
+const erudaScript = document.createElement('script');
+erudaScript.src = 'https://cdn.jsdelivr.net/npm/eruda';
+erudaScript.onload = () => {
+    if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        eruda.init();
+        console.log("Eruda initialized");
+    }
+};
+document.body.appendChild(erudaScript);
