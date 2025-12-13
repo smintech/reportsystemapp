@@ -109,8 +109,11 @@ document.getElementById("reportForm").addEventListener("submit", async function(
             return;
         }
     }
+    
+const fileInput = document.getElementById('fileinput'); // Assuming you have a file input element
   const files = Array.from(fileInput.files);
   let uploadedUrls = [];
+
   if (files.length > 0) {
         const formData = new FormData();
         files.forEach(file => formData.append("fileinput", file));
@@ -121,12 +124,33 @@ document.getElementById("reportForm").addEventListener("submit", async function(
             });
             const data = await res.json();
             if (data.urls) uploadedUrls = data.urls;
+
+            // Now, 'uploadedUrls' contains the array of URLs from the server
+            console.log("Uploaded URLs:", uploadedUrls);
+            // Example: Send these URLs to another backend endpoint
+            // This assumes your backend has an endpoint like '/api/reports' that accepts a list of URLs
+            const reportData = {
+                // ... other report details like report_id, description, etc. ...
+                evidence_urls: uploadedUrls
+            };
+
+            const reportRes = await fetch("/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(reportData)
+            });
+            
+            const reportResult = await reportRes.json();
+            console.log("Report submission result:", reportResult);
+
         } catch (err) {
-            console.error("GitHub upload failed", err);
-            alert("File upload failed. Try again.");
+            console.error("File upload or report submission failed", err);
+            alert("Operation failed. Try again.");
             return;
+        }
     }
-}
     /* ---------- ADD EVIDENCE LINK ---------- */
     if (evidenceInput && evidenceInput.value.trim()) {
         uploadedUrls.push(evidenceInput.value.trim());
