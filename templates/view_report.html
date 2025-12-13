@@ -168,15 +168,14 @@ a.back-link:hover {
 {% set evidence = report.evidence_parsed %}
 
 {% if evidence.files %}
-    <h4>Evidence:</h4>
     <ul>
-    {% for item in evidence.files %}
+    {% for url in evidence.files %}
         <li>
-            <a href="{{ item.value }}" target="_blank">
-                {% if item.value.endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
-                    #{{ item.id }} File
+            <a href="{{ url }}" target="_blank">
+                {% if url.endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
+                    File
                 {% else %}
-                    #{{ item.id }} Link
+                    Link
                 {% endif %}
             </a>
         </li>
@@ -187,7 +186,7 @@ a.back-link:hover {
 {% elif evidence.link %}
     <a href="{{ evidence.link }}" target="_blank">View Link</a>
 {% else %}
-    <p>No evidence submitted.</p>
+    No evidence submitted
 {% endif %}
 <p><strong>Assigned to this user with ID:</strong> {{ report.assigned_staff_id if report.assigned_staff_id else "Not assigned" }}</p>
 </div>
