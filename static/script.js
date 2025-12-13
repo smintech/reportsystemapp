@@ -146,7 +146,7 @@ document.getElementById("reportForm").addEventListener("submit", async function(
     try {
         const res = await fetch("/", {
             method: "POST",
-            body: finalFormData
+            body: formData
         });
 
         if (!res.ok) {
