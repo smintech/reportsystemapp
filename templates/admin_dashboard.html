@@ -303,21 +303,34 @@
 
     <!-- ===== EVIDENCE PREVIEW SECTION ===== -->
 <div class="evidence-box">
-{% set evidence = report.evidence_parsed %}
-{% for item in evidence.files %}
-    <li>
-        <a href="{{ item }}" target="_blank">
-            {% if item.endswith('.png') 
-               or item.endswith('.jpg') 
-               or item.endswith('.jpeg') 
-               or item.endswith('.gif') 
-               or item.endswith('.mp4') %}
-                File
-            {% else %}
-                Link
-            {% endif %}
-        </a>
-    </li>
+{% for report in reports %}
+    {% set evidence = report.evidence_parsed %}
+
+    {% if evidence.files %}
+        <ul>
+        {% for item in evidence.files %}
+            <li>
+                <a href="{{ item }}" target="_blank">
+                    {% if item.endswith('.png') 
+                       or item.endswith('.jpg') 
+                       or item.endswith('.jpeg') 
+                       or item.endswith('.gif') 
+                       or item.endswith('.mp4') %}
+                        File
+                    {% else %}
+                        Link
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% elif evidence.single %}
+        <a href="{{ evidence.single }}" target="_blank">View File</a>
+    {% elif evidence.link %}
+        <a href="{{ evidence.link }}" target="_blank">View Link</a>
+    {% else %}
+        No evidence submitted
+    {% endif %}
 {% endfor %}
 </div>
 </div>
