@@ -174,17 +174,18 @@ def home():
                         flash(f"Failed to upload {file.filename} to GitHub: {str(e)}", "error")
                         continue
             # Combine previous uploaded_urls_json + newly uploaded GitHub URLs + evidence_link
-            if uploaded_urls_json:
+            uploaded_urls_input = request.form.get("uploaded_urls", "[]")
                 try:
-                    parsed = json.loads(uploaded_urls_json)
+                    parsed = json.loads(uploaded_urls_input)
                     if isinstance(parsed, list):
                         for url in parsed:
                             if isinstance(url, str) and url.strip():
                                 uploaded_urls.append(url)
                 except json.JSONDecodeError:
                     pass
-            if evidence_link:
-                uploaded_urls.append(evidence_link)
+                
+                if evidence_link:
+                    uploaded_urls.append(evidence_link)
                 
             anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
             tracking_id = str(uuid.uuid4())
