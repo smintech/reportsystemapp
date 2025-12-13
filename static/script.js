@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-document.getElementById("reportForm).addEventListener("submit", async function (e) {
+document.getElementById("reportForm").addEventListener("submit", async function (e) {
     e.preventDefault();
     console.log("JS LOADED");
 
