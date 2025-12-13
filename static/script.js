@@ -81,9 +81,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Form Submission Validation ===
-document.getElementById("reportForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    console.log("JS LOADED");
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("reportForm");
+    if (!form) {
+        console.error("Form not found!");
+        return;
+    }
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        console.log("JS LOADED");
 
     const categoryGroup = document.getElementById("category-group").value;
     const categoryItem = document.getElementById("options-group").value;
