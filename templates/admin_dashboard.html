@@ -303,6 +303,7 @@
 
     <!-- ===== EVIDENCE PREVIEW SECTION ===== -->
 <div class="evidence-box">
+{% set evidence = report.evidence_parsed %}
 {% for item in evidence.files %}
     <li>
         <a href="{{ item }}" target="_blank">
