@@ -13,17 +13,9 @@ import uuid
 import hashlib
 import random
 import json
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
-cloudinary.config(
-    cloud_name="dowpqktts",
-    api_key="819877624561655",
-    api_secret="OfGF1Kc261bOJa6dBUMDmk5p2po"
-    )
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'mp4'}  # Extend as needed
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -149,11 +141,14 @@ def home():
             # --- FILE UPLOAD ---
             if uploaded_urls_json:
                 try:
-                    uploaded_urls = json.loads(uploaded_urls_json)
+                    parsed = json.loads(uploaded_urls_json)
+                    
+                    if isinstance(parsed, list):
+                        uploaded_urls = [url for url in parsed if isinstance(url, str) and url.strip()]
+                    else:
+                        uploaded_urls = []
                 except json.JSONDecodeError:
                     uploaded_urls = []
-            else:
-                uploaded_urls = []
             # Combine file names or use evidence_link
             evidence_list = uploaded_urls.copy()
             if evidence_link:
