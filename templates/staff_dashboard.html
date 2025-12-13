@@ -192,7 +192,7 @@
                     <td>{{ r.assigned_staff_id or 'Unassigned' }}</td>
                     <td>
                         <div class="evidence-box">
-                {% set evidence = report.evidence_parsed %}
+                {% set evidence = r.evidence_parsed %}
 
                 {% if evidence.files %}
                     <ul>
