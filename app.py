@@ -566,7 +566,31 @@ def view_report(rid):
         return redirect(url_for("home"))
         
     report = dict(row)
-    report['evidence_list'] = parse_evidence(report['evidence'])
+    raw_evidence = report.get("evidence")
+    
+    evidence_parsed = {
+    "files": [],
+    "link": None,
+    "single": None
+    }
+    if raw_evidence:
+        try:
+            evidence_list = json.loads(raw_evidence)
+            
+            if isinstance(evidence_list, list):
+                for item in evidence_list:
+                    if isinstance(item, str) and item.startswith("http"):
+                        evidence_parsed["files"].append(item)
+                    else:
+                        evidence_parsed["files"].append(item)
+                        
+                if len(evidence_parsed["files"]) == 1:
+                    evidence_parsed["single"] = evidence_parsed["files"][0]
+            
+        except Exception:
+            pass
+            
+    report["evidence_parsed"] = evidence_parsed
     
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
