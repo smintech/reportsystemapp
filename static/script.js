@@ -89,7 +89,7 @@ const firebaseConfig = {
     authDomain: "report-system-c5ceb.firebaseapp.com",
     projectId: "report-system-c5ceb",
     storageBucket: "report-system-c5ceb.firebasestorage.app",
-    messagingSenderId: "608398238500,
+    messagingSenderId: "608398238500",
     appId: "1:608398238500:web:996b79a7c75bad60fe49b1"
 };
 const app = initializeApp(firebaseConfig);
@@ -105,6 +105,7 @@ async function uploadFiles(files) {
             console.log(`Uploaded: ${file.name} → ${url}`);
         } catch (err) {
             console.error(`Failed to upload ${file.name}:`, err);
+            throw err;
         }
     }
     return urls;
@@ -149,18 +150,12 @@ if (files.length > 0) {
         console.log("FINAL CLOUD URLS:", cloudUrls);
     } catch (err) {
         console.error("Upload failed", err);
-        alert("One or more file uploads failed. Please check your network and resubmit.");
-        return;
+        return alert("One or more file uploads failed. Please check your network and resubmit.");
     }
 }
     /* ---------- ADD EVIDENCE LINK ---------- */
-    if (evidenceInput && evidenceInput.value.trim()) {
-        cloudUrls.push(evidenceInput.value.trim());
-    }
-
+    if (evidenceInput) cloudUrls.push(evidenceInput);
     uploadedUrlsInput.value = JSON.stringify(cloudUrls);
-    console.log("Final uploaded_urls value:", uploadedUrlsInput.value);
-
     /* ---------- FINAL FORM SUBMISSION ---------- */
     const formData = new FormData();
     formData.append("category_group", categoryGroup);
