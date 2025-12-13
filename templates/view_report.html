@@ -165,31 +165,31 @@ a.back-link:hover {
     <p><strong>Details:</strong> {{ report.details }}</p>
 
     <p><strong>Evidence:</strong></p>
-{% set evidence = report.evidence_parsed %}
-{% if evidence.files %}
+{% if report.evidence_parsed.manual_link %}
+    <p><strong>Provided Link:</strong>
+        <a href="{{ report.evidence_parsed.manual_link }}" target="_blank">
+            {{ report.evidence_parsed.manual_link }}
+        </a>
+    </p>
+{% endif %}
+
+{% if report.evidence_parsed.uploaded_files %}
+    <p><strong>Uploaded Files ({{ report.evidence_parsed.uploaded_files|length }}):</strong></p>
     <ul>
-    {% for item in evidence.files %}
-        <li>
-            <a href="{{ item.value }}" target="_blank">
-                {% if item.value.endswith('.png') 
-                   or item.value.endswith('.jpg') 
-                   or item.value.endswith('.jpeg') 
-                   or item.value.endswith('.gif') 
-                   or item.value.endswith('.mp4') %}
-                    File
-                {% else %}
-                    Link
-                {% endif %}
-            </a>
-        </li>
-    {% endfor %}
+        {% for file in report.evidence_parsed.uploaded_files %}
+            <li>
+                <a href="{{ file.url }}" target="_blank">
+                    {% if file.filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')) %}
+                        <img src="{{ file.url }}" alt="{{ file.filename }}" style="max-width: 300px; margin: 10px 0;">
+                    {% else %}
+                        {{ file.filename }}
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
     </ul>
-{% elif evidence.single %}
-    <a href="{{ evidence.single }}" target="_blank">View File</a>
-{% elif evidence.link %}
-    <a href="{{ evidence.link }}" target="_blank">View Link</a>
 {% else %}
-    No evidence submitted
+    <p>No uploaded files.</p>
 {% endif %}
 <p><strong>Assigned to this user with ID:</strong> {{ report.assigned_staff_id if report.assigned_staff_id else "Not assigned" }}</p>
 </div>
