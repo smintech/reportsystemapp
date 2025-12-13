@@ -141,6 +141,8 @@ document.getElementById("reportForm").addEventListener("submit", async function(
         formData.append("reporter_email", reporterEmail);
     }
     
+    console.log("SENDING TO BACKEND:", uploadedUrlsInput.value);
+    
     try {
         const res = await fetch("/", {
             method: "POST",
