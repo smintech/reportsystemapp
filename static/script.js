@@ -135,7 +135,7 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
 
         } catch (err) {
             console.error("Upload failed", err);
-            alert("One or more file uploads failed");
+            alert("One or more file uploads failed please check your network and resubmit");
             return;
         }
     }
