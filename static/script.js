@@ -1,7 +1,3 @@
-// 1️⃣ Import Firebase modules (ES Modules)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
 document.addEventListener('DOMContentLoaded', () => {
   // === Category Dropdown Handling ===
   const selectWrapper = document.querySelector('.categorywrapper');
@@ -83,33 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
           aboutLink.textContent = "About Page(learn more about the page)";
       }
   });
-// 2️⃣ Initialize Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyDbcJoeKjlSSZZCvejZqxVpFNMdimjSIIk",
-    authDomain: "report-system-c5ceb.firebaseapp.com",
-    projectId: "report-system-c5ceb",
-    storageBucket: "report-system-c5ceb.firebasestorage.app",
-    messagingSenderId: "608398238500",
-    appId: "1:608398238500:web:996b79a7c75bad60fe49b1"
-};
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-async function uploadFiles(files) {
-    const urls = [];
-    for (const file of files) {
-        try {
-            const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(snapshot.ref);
-            urls.push(url);
-            console.log(`Uploaded: ${file.name} → ${url}`);
-        } catch (err) {
-            console.error(`Failed to upload ${file.name}:`, err);
-            throw err;
-        }
-    }
-    return urls;
-}
   // === Form Submission Validation ===
 document.getElementById("reportForm").addEventListener("submit", async function(e) {
     e.preventDefault();
@@ -140,38 +109,44 @@ document.getElementById("reportForm").addEventListener("submit", async function(
             return;
         }
     }
-
-const files = Array.from(fileInput.files);
-let cloudUrls = [];
-
-if (files.length > 0) {
-    try {
-        cloudUrls = await uploadFiles(files);
-        console.log("FINAL CLOUD URLS:", cloudUrls);
-    } catch (err) {
-        console.error("Upload failed", err);
-        return alert("One or more file uploads failed. Please check your network and resubmit.");
+  const files = Array.from(fileInput.files);
+  let uploadedUrls = [];
+  if (files.length > 0) {
+        const formData = new FormData();
+        files.forEach(file => formData.append("fileinput", file));
+        try {
+            const res = await fetch("/upload_github", {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (data.urls) uploadedUrls = data.urls;
+        } catch (err) {
+            console.error("GitHub upload failed", err);
+            alert("File upload failed. Try again.");
+            return;
     }
 }
     /* ---------- ADD EVIDENCE LINK ---------- */
-    if (evidenceInput) cloudUrls.push(evidenceInput);
-    uploadedUrlsInput.value = JSON.stringify(cloudUrls);
+    if (evidenceInput && evidenceInput.value.trim()) {
+        uploadedUrls.push(evidenceInput.value.trim());
+    }
+    
+    uploadedUrlsInput.value = JSON.stringify(uploadedUrls);
     /* ---------- FINAL FORM SUBMISSION ---------- */
     const formData = new FormData();
     formData.append("category_group", categoryGroup);
     formData.append("options_group", categoryItem);
     formData.append("details", details);
     formData.append("uploaded_urls", uploadedUrlsInput.value);
-    formData.append("reporter_email", reporterEmail);
-    
     if (reporterEmail) {
         formData.append("reporter_email", reporterEmail);
     }
-
+    
     try {
         const res = await fetch("/", {
             method: "POST",
-            body: formData
+            body: finalFormData
         });
 
         if (!res.ok) {
@@ -180,12 +155,14 @@ if (files.length > 0) {
             alert("Server error: " + res.status);
             return;
         }
-
+        
+        
+        alert("Report submitted successfully!");
         window.location.reload();
 
     } catch (err) {
-        console.error(err);
-        alert("Error submitting report");
+        console.error("Submission failed:", err);
+        alert("Failed to submit report. Try again.");
     }
 });
 
