@@ -170,7 +170,13 @@ def home():
 
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
             return response
-
+            
+            print("REPORT RECEIVED")
+            print("Category:", category_group)
+            print("Options:", options_group)
+            print("Details:", details)
+            print("Reporter Email:", reporter_email)
+            print("Uploaded URLs:", evidence_json)
         # ------------------- GET REQUEST -------------------
         return render_template("index.html", tracking_id=tracking_id)
     
