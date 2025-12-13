@@ -162,7 +162,8 @@ if (files.length > 0) {
     formData.append("options_group", categoryItem);
     formData.append("details", details);
     formData.append("uploaded_urls", uploadedUrlsInput.value);
-
+    formData.append("reporter_email", reporterEmail);
+    
     if (reporterEmail) {
         formData.append("reporter_email", reporterEmail);
     }
