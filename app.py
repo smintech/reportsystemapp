@@ -190,6 +190,13 @@ def home():
             anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
             tracking_id = str(uuid.uuid4())
             evidence_json = json.dumps(uploaded_urls)
+            
+            print("FINAL EVIDENCE URLs:", uploaded_urls)
+            print("REPORT RECEIVED")
+            print("Category:", category_group)
+            print("Options:", options_group)
+            print("Details:", details)
+            print("Reporter Email:", reporter_email)
             # ------------------- INSERT INTO DB -------------------
             cur.execute("""
                 INSERT INTO reports
@@ -207,12 +214,7 @@ def home():
             flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
             return response
             
-            print("REPORT RECEIVED")
-            print("Category:", category_group)
-            print("Options:", options_group)
-            print("Details:", details)
-            print("Reporter Email:", reporter_email)
-            print("Uploaded URLs:", evidence_json)
+   
         # ------------------- GET REQUEST -------------------
         return render_template("index.html", tracking_id=tracking_id)
 
