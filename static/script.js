@@ -122,7 +122,7 @@ if (files.length > 0) {
             fd.append("upload_preset", "evidence_uploads");
 
             const res = await fetch(
-                "https://api.cloudinary.com/v1_1/dowpqktts/auto/upload",
+                "https://api.cloudinary.com/v1_1/dowpqktts/raw/upload",
                 {
                     method: "POST",
                     body: fd
