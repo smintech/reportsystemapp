@@ -16,40 +16,7 @@ import json
 app = Flask(__name__)
 app.secret_key = "admin_logged_in_77"
 app.permanent_session_lifetime = timedelta(days=1)
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # <-- Replace with your PAT
-GITHUB_OWNER = "smintech"               # <-- Replace with your GitHub username
-GITHUB_REPO = "reportsystemapp"                    # <-- Replace with your repository name
-GITHUB_RELEASE_TAG = "report_uploads"
 
-def get_release_upload_url():
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    # Check if release exists
-    res = requests.get(
-        f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/tags/{GITHUB_RELEASE_TAG}",
-        headers=headers
-    )
-    if res.status_code == 404:
-        # Create release if not exists
-        data = {
-            "tag_name": GITHUB_RELEASE_TAG,
-            "name": GITHUB_RELEASE_TAG,
-            "body": "Auto-uploaded reports",
-            "draft": False,
-            "prerelease": False
-        }
-        res = requests.post(
-            f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases",
-            json=data,
-            headers=headers
-        )
-        res.raise_for_status()
-    else:
-        res.raise_for_status()
-    
-    release_data = res.json()
-    upload_url = release_data["upload_url"].split("{")[0]  # strip template
-    return upload_url
-    
 RATEL_DB_URL = os.getenv("DATABASE_URL")
 def get_db():
     if "db" not in g:
@@ -147,123 +114,127 @@ def get_or_create_cookie_uuid(cur):
 def home():
     tracking_id = None
     db = get_db()
-    with db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        if request.method == "POST":
-            reporter_email = request.form.get("reporter_email") or None
-            fingerprint = request.form.get("fingerprint") or None
-            category_group = request.form.get("category_group", "").strip()
-            options_group = request.form.get("options_group","").strip()
-            details = request.form.get("details", "").strip()
-            evidence_link = request.form.get("evidence") or None  # link text input
-            
-            
-            if not category_group or not details:
-                flash("Category and details are required.", "error")
+    if request.method == "POST":
+        reporter_email = request.form.get("reporter_email", "").strip() or None
+        category_group = request.form.get("category_group", "").strip()
+        options_group = request.form.get("options_group", "").strip()
+        details = request.form.get("details", "").strip()
+
+        if not category_group or not options_group or not details:
+            flash("All required fields must be filled.", "error")
+            return redirect(url_for("home"))
+
+        if len(details) < 20:
+            flash("Details must be at least 20 characters.", "error")
+            return redirect(url_for("home"))
+
+        # Get evidence: manual URL + uploaded file URLs from Cloudinary
+        evidence_urls = []
+
+        # 1. Manual evidence link (from text input)
+        evidence_link = request.form.get("evidence", "").strip()
+        if evidence_link:
+            # Basic validation
+            if evidence_link.startswith(("http://", "https://")):
+                evidence_urls.append({"type": "link", "url": evidence_link})
+            else:
+                flash("Evidence link must start with http:// or https://", "error")
                 return redirect(url_for("home"))
-            # ------------------- HANDLE FILES -------------------
-            # --- FILE UPLOAD ---
-            uploaded_urls = []
-            uploaded_files = request.files.getlist("evidence_files")
-            for file in uploaded_files:
-                if file and file.filename:
-                    try:
-                        url = upload_file_to_github(file)  # helper function
-                        uploaded_urls.append(url)
-                    except Exception as e:
-                        flash(f"Failed to upload {file.filename} to GitHub: {str(e)}", "error")
-                        continue
-            
-                uploaded_urls_input = request.form.get("uploaded_urls", "[]")
-                try:
-                    parsed = json.loads(uploaded_urls_input)
-                    if isinstance(parsed, list):
-                        for url in parsed:
-                            if isinstance(url, str) and url.strip():
-                                uploaded_urls.append(url)
-                except json.JSONDecodeError:
-                    pass
-                
-                if evidence_link:
-                    uploaded_urls.append(evidence_link)
-                
-            anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
-            tracking_id = str(uuid.uuid4())
-            evidence_json = json.dumps(uploaded_urls)
-            
-            print("FINAL EVIDENCE URLs:", uploaded_urls)
-            print("REPORT RECEIVED")
-            print("Category:", category_group)
-            print("Options:", options_group)
-            print("Details:", details)
-            print("Reporter Email:", reporter_email)
-            # ------------------- INSERT INTO DB -------------------
+
+        # 2. Cloudinary uploaded URLs (sent as JSON string from frontend)
+        uploaded_urls_json = request.form.get("uploaded_urls", "[]")
+        try:
+            uploaded_urls_list = json.loads(uploaded_urls_json)
+            if isinstance(uploaded_urls_list, list):
+                for url in uploaded_urls_list:
+                    if isinstance(url, str) and url.strip().startswith("http"):
+                        evidence_urls.append({"type": "file", "url": url.strip()})
+        except json.JSONDecodeError:
+            flash("Invalid file upload data.", "error")
+            return redirect(url_for("home"))
+
+        # Generate anon_id and cookie
+        anon_id, cookie_uuid = get_or_create_cookie_uuid(cur)
+        tracking_id = str(uuid.uuid4())[:8].upper()  # shorter, nicer tracking ID
+
+        # Save as JSON with type info
+        evidence_json = json.dumps(evidence_urls)
+
+        try:
             cur.execute("""
-                INSERT INTO reports
-                (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW(), NOW())
-            """, (anon_id, cookie_uuid, fingerprint, category_group, options_group, reporter_email, tracking_id, details, evidence_json))
+                INSERT INTO reports 
+                (anon_id, cookie_uuid, reporter_email, tracking_id, 
+                 category_group, options_group, details, evidence, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Pending')
+            """, (anon_id, cookie_uuid, reporter_email, tracking_id,
+                  category_group, options_group, details, evidence_json))
+
             db.commit()
 
-            # ------------------- SEND RESPONSE + COOKIE -------------------
+            # Set cookies
             response = make_response(redirect(url_for("home")))
             expires = datetime(2038, 12, 19)
-            response.set_cookie("cookie_uuid", cookie_uuid, expires=expires, httponly=True, samesite="Lax")
-            response.set_cookie("anon_id", str(anon_id), expires=expires, httponly=True, samesite="Lax")
+            response.set_cookie("cookie_uuid", cookie_uuid, expires=expires,
+                                httponly=True, samesite="Lax")
+            response.set_cookie("anon_id", str(anon_id), expires=expires,
+                                httponly=True, samesite="Lax")
 
-            flash(f"Report submitted. Tracking ID: {tracking_id}", "success")
+            flash(f"Report submitted successfully! Tracking ID: {tracking_id}", "success")
             return response
-            
-   
-        # ------------------- GET REQUEST -------------------
-        return render_template("index.html", tracking_id=tracking_id)
 
-@app.route("/upload_github", methods=["POST"])
-def upload_github():
-    files = request.files.getlist("fileinput")
-    if not files:
-        return jsonify({"error": "No files provided"}), 400
-
-    uploaded_urls = []
-    for file in files:
-        try:
-            url = upload_file_to_github(file)
-            uploaded_urls.append(url)
         except Exception as e:
-            return jsonify({"error": f"Failed to upload {file.filename}: {str(e)}"}), 500
+            db.rollback()
+            print("DB Error:", e)
+            flash("Failed to submit report. Try again.", "error")
+            return redirect(url_for("home"))
 
-    return jsonify({"urls": uploaded_urls})
-    
-def parse_evidence(evidence_value):
-    """
-    Returns a dict containing:
-      files → list of dicts {id, value} for multiple items
-      link → first link if only one
-      single → first file if only one
-    """
-    result = {"files": None, "link": None, "single": None}
-    if not evidence_value:
-        return result
+    # GET request
+    cur.close()
+    return render_template("index.html")
 
-    # Convert JSON string to Python object
+def parse_evidence(evidence_json):
+    """
+    Parses the evidence JSON and returns structured data for templates.
+    Returns:
+        {
+            "manual_link": "https://..." or None,
+            "uploaded_files": [{"url": "...", "filename": "optional.jpg"}] or []
+        }
+    """
+    if not evidence_json:
+        return {"manual_link": None, "uploaded_files": []}
+
     try:
-        evidence_list = json.loads(evidence_value)
+        evidence_list = json.loads(evidence_json)
     except (TypeError, json.JSONDecodeError):
-        evidence_list = [evidence_value]
-        # fallback if somehow string is stored
-    if not evidence_list:
-        return result
-        
-    if len(evidence_list) == 1:
-        item = evidence_list[0]
-        if isinstance(item, str) and item.startswith("http"):
-            result["link"] = item
-        else:
-            result["single"] = item
-        return result
-    files_with_id = [{"id": idx + 1, "value": v} for idx, v in enumerate(evidence_list)]
-    result["files"] = files_with_id
-    return result
+        return {"manual_link": None, "uploaded_files": []}
+
+    manual_link = None
+    uploaded_files = []
+
+    for item in evidence_list:
+        if isinstance(item, dict) and "type" in item and "url" in item:
+            if item["type"] == "link":
+                manual_link = item["url"]
+            elif item["type"] == "file":
+                # Extract filename from URL if possible
+                filename = item["url"].split("/")[-1].split("?")[0]
+                if not filename or len(filename) > 50:
+                    filename = "uploaded_file_" + str(len(uploaded_files) + 1)
+                uploaded_files.append({"url": item["url"], "filename": filename})
+        elif isinstance(item, str) and item.startswith("http"):
+            # Fallback for old data
+            filename = item.split("/")[-1].split("?")[0]
+            if len(filename) < 3 or "." not in filename:
+                filename = f"file_{len(uploaded_files)+1}"
+            uploaded_files.append({"url": item, "filename": filename})
+
+    return {
+        "manual_link": manual_link,
+        "uploaded_files": uploaded_files
+    }
     
 def adminonly(f):
     @wraps(f)
