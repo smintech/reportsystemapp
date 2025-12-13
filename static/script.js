@@ -134,15 +134,30 @@ if (files.length > 0) {
                 return null;
             }
 
-            const data = await res.json();
-            console.log("Cloudinary response:", data);
+        const data = await res.json();
+        console.log("Cloudinary response:", data);
 
-            return data.secure_url ?? null;
-        });
+        // Check for errors
+        if (data.error) {
+            console.error("Cloudinary error:", data.error.message);
+            return null;
+        }
 
-        const results = await Promise.all(uploadPromises);
+        if (data.status === "pending") {
+            console.warn("Upload is pending, checking for secure_url anyway...");
+        }
 
-        cloudUrls = results.filter(url => url !== null);
+        // Get the URL of the uploaded file
+        const fileUrl = data.secure_url || data.url || null;
+        if (!fileUrl) {
+            console.error("No URL returned from Cloudinary:", data);
+        }
+
+        return data;
+    });
+      const results = await Promise.all(uploadPromises);
+
+      cloudUrls = results.filter(url => url !== null);
 
         console.log("FINAL CLOUD URLS:", cloudUrls);
 
