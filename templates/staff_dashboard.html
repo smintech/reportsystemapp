@@ -191,6 +191,35 @@
                     <td>{{ r.status }}</td>
                     <td>{{ r.assigned_staff_id or 'Unassigned' }}</td>
                     <td>
+                        <div class="evidence-box">
+                {% set evidence = report.evidence_parsed %}
+
+                {% if evidence.files %}
+                    <ul>
+                    {% for item in evidence.files %}
+                        <li>
+                            <a href="{{ item }}" target="_blank">
+                                {% if item.endswith('.png') 
+                                   or item.endswith('.jpg') 
+                                   or item.endswith('.jpeg') 
+                                   or item.endswith('.gif') 
+                                   or item.endswith('.mp4') %}
+                                    File
+                                {% else %}
+                                    Link
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% elif evidence.single %}
+                    <a href="{{ evidence.single }}" target="_blank">View File</a>
+                {% elif evidence.link %}
+                    <a href="{{ evidence.link }}" target="_blank">View Link</a>
+                {% else %}
+                    No evidence submitted
+                {% endif %}
+            </div>
                         <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
 
                         <form method="post" action="{{ url_for('assign_to_self_staff', rid=r.id) }}">
@@ -222,43 +251,6 @@
                             </select>
                             <button class="btn-table btn-status">Update</button>
                         </form>
-                    </td>
-                </tr>
-
-                <!-- EVIDENCE for each report -->
-                <tr>
-                    <td colspan="6">
-                        <div class="evidence-box">
-{% for report in reports %}
-    {% set evidence = report.evidence_parsed %}
-
-    {% if evidence.files %}
-        <ul>
-        {% for item in evidence.files %}
-            <li>
-                <a href="{{ item }}" target="_blank">
-                    {% if item.endswith('.png') 
-                       or item.endswith('.jpg') 
-                       or item.endswith('.jpeg') 
-                       or item.endswith('.gif') 
-                       or item.endswith('.mp4') %}
-                        File
-                    {% else %}
-                        Link
-                    {% endif %}
-                </a>
-            </li>
-        {% endfor %}
-        </ul>
-    {% elif evidence.single %}
-        <a href="{{ evidence.single }}" target="_blank">View File</a>
-    {% elif evidence.link %}
-        <a href="{{ evidence.link }}" target="_blank">View Link</a>
-    {% else %}
-        No evidence submitted
-    {% endif %}
-{% endfor %}
-                        </div>
                     </td>
                 </tr>
 
