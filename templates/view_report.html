@@ -165,14 +165,16 @@ a.back-link:hover {
     <p><strong>Details:</strong> {{ report.details }}</p>
 
     <p><strong>Evidence:</strong></p>
-{% set evidence = report.evidence_parsed %}
-
 {% if evidence.files %}
     <ul>
-    {% for url in evidence.files %}
+    {% for item in evidence.files %}
         <li>
-            <a href="{{ url }}" target="_blank">
-                {% if url.endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
+            <a href="{{ item.value }}" target="_blank">
+                {% if item.value.endswith('.png') 
+                   or item.value.endswith('.jpg') 
+                   or item.value.endswith('.jpeg') 
+                   or item.value.endswith('.gif') 
+                   or item.value.endswith('.mp4') %}
                     File
                 {% else %}
                     Link
