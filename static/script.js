@@ -79,7 +79,36 @@ document.addEventListener('DOMContentLoaded', () => {
           aboutLink.textContent = "About Page(learn more about the page)";
       }
   });
+// 1️⃣ Import Firebase modules (ES Modules)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
+// 2️⃣ Initialize Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDbcJoeKjlSSZZCvejZqxVpFNMdimjSIIk",
+    authDomain: "report-system-c5ceb.firebaseapp.com",
+    projectId: "report-system-c5ceb",
+    storageBucket: "report-system-c5ceb.firebasestorage.app",
+    messagingSenderId: "608398238500,
+    appId: "1:608398238500:web:996b79a7c75bad60fe49b1"
+};
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+async function uploadFiles(files) {
+    const urls = [];
+    for (const file of files) {
+        try {
+            const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(snapshot.ref);
+            urls.push(url);
+            console.log(`Uploaded: ${file.name} → ${url}`);
+        } catch (err) {
+            console.error(`Failed to upload ${file.name}:`, err);
+        }
+    }
+    return urls;
+}
   // === Form Submission Validation ===
 document.getElementById("reportForm").addEventListener("submit", async function(e) {
     e.preventDefault();
@@ -116,51 +145,8 @@ let cloudUrls = [];
 
 if (files.length > 0) {
     try {
-        const uploadPromises = files.map(async (file) => {
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("upload_preset", "evidence_uploads");
-
-            const res = await fetch(
-                "https://api.cloudinary.com/v1_1/dowpqktts/raw/upload",
-                {
-                    method: "POST",
-                    body: fd
-                }
-            );
-
-            if (!res.ok) {
-                console.error("Upload failed status:", res.status);
-                return null;
-            }
-
-        const data = await res.json();
-        console.log("Cloudinary response:", data);
-
-        // Check for errors
-        if (data.error) {
-            console.error("Cloudinary error:", data.error.message);
-            return null;
-        }
-
-        if (data.status === "pending") {
-            console.warn("Upload is pending, checking for secure_url anyway...");
-        }
-
-        // Get the URL of the uploaded file
-        const fileUrl = data.secure_url || data.url || null;
-        if (!fileUrl) {
-            console.error("No URL returned from Cloudinary:", data);
-        }
-
-        return data;
-    });
-      const results = await Promise.all(uploadPromises);
-
-      cloudUrls = results.filter(url => url !== null);
-
+        cloudUrls = await uploadFiles(files);
         console.log("FINAL CLOUD URLS:", cloudUrls);
-
     } catch (err) {
         console.error("Upload failed", err);
         alert("One or more file uploads failed. Please check your network and resubmit.");
