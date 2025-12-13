@@ -229,37 +229,35 @@
                 <tr>
                     <td colspan="6">
                         <div class="evidence-box">
-{% set evidence = r.evidence_parsed %}
+{% for report in reports %}
+    {% set evidence = report.evidence_parsed %}
 
-{% if evidence.files %}
-    <strong>Uploaded Files:</strong>
-    <ul>
-        {% for f in evidence.files %}
-        <li class="evidence-item">
-            <a href="{{ f.value if f.value is mapping else f }}" target="_blank">
-                {% if (f.value if f.value is mapping else f).endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4')) %}
-                    File
-                {% else %}
-                    Link
-                {% endif %}
-            </a>
-        </li>
+    {% if evidence.files %}
+        <ul>
+        {% for item in evidence.files %}
+            <li>
+                <a href="{{ item }}" target="_blank">
+                    {% if item.endswith('.png') 
+                       or item.endswith('.jpg') 
+                       or item.endswith('.jpeg') 
+                       or item.endswith('.gif') 
+                       or item.endswith('.mp4') %}
+                        File
+                    {% else %}
+                        Link
+                    {% endif %}
+                </a>
+            </li>
         {% endfor %}
-    </ul>
-
-{% elif evidence.single %}
-    <strong>Uploaded File:</strong>
-    <a class="evidence-item" href="{{ evidence.single }}" target="_blank">
-        {{ evidence.single }}
-    </a>
-
-{% elif evidence.link %}
-    <strong>Evidence Link:</strong>
-    <a class="evidence-item" href="{{ evidence.link }}" target="_blank">{{ evidence.link }}</a>
-
-{% else %}
-    <p>No evidence submitted.</p>
-{% endif %}
+        </ul>
+    {% elif evidence.single %}
+        <a href="{{ evidence.single }}" target="_blank">View File</a>
+    {% elif evidence.link %}
+        <a href="{{ evidence.link }}" target="_blank">View Link</a>
+    {% else %}
+        No evidence submitted
+    {% endif %}
+{% endfor %}
                         </div>
                     </td>
                 </tr>
@@ -308,21 +306,34 @@
                 <tr>
                     <td colspan="5">
                         <div class="evidence-box">
-{% set evidence = report.evidence_parsed %}
-{% for item in evidence.files %}
-    <li>
-        <a href="{{ item }}" target="_blank">
-            {% if item.endswith('.png') 
-               or item.endswith('.jpg') 
-               or item.endswith('.jpeg') 
-               or item.endswith('.gif') 
-               or item.endswith('.mp4') %}
-                File
-            {% else %}
-                Link
-            {% endif %}
-        </a>
-    </li>
+{% for report in reports %}
+    {% set evidence = report.evidence_parsed %}
+
+    {% if evidence.files %}
+        <ul>
+        {% for item in evidence.files %}
+            <li>
+                <a href="{{ item }}" target="_blank">
+                    {% if item.endswith('.png') 
+                       or item.endswith('.jpg') 
+                       or item.endswith('.jpeg') 
+                       or item.endswith('.gif') 
+                       or item.endswith('.mp4') %}
+                        File
+                    {% else %}
+                        Link
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% elif evidence.single %}
+        <a href="{{ evidence.single }}" target="_blank">View File</a>
+    {% elif evidence.link %}
+        <a href="{{ evidence.link }}" target="_blank">View Link</a>
+    {% else %}
+        No evidence submitted
+    {% endif %}
 {% endfor %}
                         </div>
                     </td>
