@@ -1,3 +1,7 @@
+// 1️⃣ Import Firebase modules (ES Modules)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
 document.addEventListener('DOMContentLoaded', () => {
   // === Category Dropdown Handling ===
   const selectWrapper = document.querySelector('.categorywrapper');
@@ -79,10 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
           aboutLink.textContent = "About Page(learn more about the page)";
       }
   });
-// 1️⃣ Import Firebase modules (ES Modules)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
 // 2️⃣ Initialize Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDbcJoeKjlSSZZCvejZqxVpFNMdimjSIIk",
