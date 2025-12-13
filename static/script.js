@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const form = document.getElementById("reportForm");
     if (!form) { console.error("Form not found!"); return; }
-    }
     
     form.addEventListener("submit", async function(e) {
         e.preventDefault();
