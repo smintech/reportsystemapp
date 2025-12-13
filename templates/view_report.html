@@ -165,6 +165,7 @@ a.back-link:hover {
     <p><strong>Details:</strong> {{ report.details }}</p>
 
     <p><strong>Evidence:</strong></p>
+{% set evidence = report.evidence_parsed %}
 {% if evidence.files %}
     <ul>
     {% for item in evidence.files %}
