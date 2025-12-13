@@ -110,41 +110,47 @@ document.getElementById("submitbtn").addEventListener("click", async function (e
         }
     }
 
-    const files = Array.from(fileInput.files);
-    let cloudUrls = [];
+const files = Array.from(fileInput.files);
+let cloudUrls = [];
 
-    /* ---------- UPLOAD FILES TO CLOUDINARY ---------- */
-    if (files.length > 0) {
-        try {
-            const uploadPromises = files.map(file => {
-                const fd = new FormData();
-                fd.append("file", file);
-                fd.append("upload_preset", "evidence_uploads");
+if (files.length > 0) {
+    try {
+        const uploadPromises = files.map(async (file) => {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", "evidence_uploads");
 
-                return fetch("https://api.cloudinary.com/v1_1/dowpqktts/upload", {
+            const res = await fetch(
+                "https://api.cloudinary.com/v1_1/dowpqktts/auto/upload",
+                {
                     method: "POST",
                     body: fd
-                }).then(res => res.json());
-            });
-
-            const results = await Promise.all(uploadPromises);
-
-            results.forEach(r => {
-                if (r.secure_url) {
-                      cloudUrls.push(r.secure_url);
-                } else {
-                      console.warn("File upload failed or no secure_url:", r);
                 }
-            });
+            );
 
-        } catch (err) {
-            console.error("Upload failed", err);
-            alert("One or more file uploads failed please check your network and resubmit");
-            return;
-        }
+            if (!res.ok) {
+                console.error("Upload failed status:", res.status);
+                return null;
+            }
+
+            const data = await res.json();
+            console.log("Cloudinary response:", data);
+
+            return data.secure_url ?? null;
+        });
+
+        const results = await Promise.all(uploadPromises);
+
+        cloudUrls = results.filter(url => url !== null);
+
+        console.log("FINAL CLOUD URLS:", cloudUrls);
+
+    } catch (err) {
+        console.error("Upload failed", err);
+        alert("One or more file uploads failed. Please check your network and resubmit.");
+        return;
     }
-    
-    console.log("Cloudinary upload results:", results);
+}
     /* ---------- ADD EVIDENCE LINK ---------- */
     if (evidenceInput && evidenceInput.value.trim()) {
         cloudUrls.push(evidenceInput.value.trim());
