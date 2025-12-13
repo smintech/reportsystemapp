@@ -394,6 +394,7 @@ def staff_dashboard():
     for i, r in enumerate(reports):
         reports[i] = dict(r)  # convert psycopg2 row to regular dict
         reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
+        print("DEBUG:", reports[i]['evidence_parsed'])
         
     cur.close()
         
