@@ -196,44 +196,46 @@ def home():
 
 def parse_evidence(evidence_json):
     """
-    Parses the evidence JSON and returns structured data for templates.
-    Returns:
-        {
-            "manual_link": "https://..." or None,
-            "uploaded_files": [{"url": "...", "filename": "optional.jpg"}] or []
-        }
+    Safely parse evidence JSON and return:
+    {
+        'manual_link': str or None,
+        'uploaded_files': list of {'url': str, 'filename': str}
+    }
     """
-    if not evidence_json:
-        return {"manual_link": None, "uploaded_files": []}
-
-    try:
-        evidence_list = json.loads(evidence_json)
-    except (TypeError, json.JSONDecodeError):
-        return {"manual_link": None, "uploaded_files": []}
-
     manual_link = None
     uploaded_files = []
 
+    if not evidence_json:
+        return {'manual_link': None, 'uploaded_files': []}
+
+    try:
+        evidence_list = json.loads(evidence_json)
+        if not isinstance(evidence_list, list):
+            evidence_list = [evidence_list]
+    except (json.JSONDecodeError, TypeError):
+        # Old data might be single string
+        if isinstance(evidence_json, str) and evidence_json.startswith("http"):
+            return {'manual_link': evidence_json, 'uploaded_files': []}
+        return {'manual_link': None, 'uploaded_files': []}
+
     for item in evidence_list:
-        if isinstance(item, dict) and "type" in item and "url" in item:
-            if item["type"] == "link":
-                manual_link = item["url"]
-            elif item["type"] == "file":
-                # Extract filename from URL if possible
-                filename = item["url"].split("/")[-1].split("?")[0]
-                if not filename or len(filename) > 50:
-                    filename = "uploaded_file_" + str(len(uploaded_files) + 1)
-                uploaded_files.append({"url": item["url"], "filename": filename})
-        elif isinstance(item, str) and item.startswith("http"):
-            # Fallback for old data
-            filename = item.split("/")[-1].split("?")[0]
-            if len(filename) < 3 or "." not in filename:
-                filename = f"file_{len(uploaded_files)+1}"
-            uploaded_files.append({"url": item, "filename": filename})
+        if isinstance(item, str) and item.startswith("http"):
+            # If only one link and no files yet, treat as manual link
+            if not uploaded_files and len(evidence_list) == 1:
+                manual_link = item
+            else:
+                # Extract filename from URL
+                filename = item.split("/")[-1].split("?")[0]
+                if not filename or "." not in filename:
+                    filename = f"file_{len(uploaded_files)+1}"
+                uploaded_files.append({"url": item, "filename": filename})
+        elif isinstance(item, dict) and "url" in item:
+            filename = item.get("filename") or item["url"].split("/")[-1].split("?")[0]
+            uploaded_files.append({"url": item["url"], "filename": filename})
 
     return {
-        "manual_link": manual_link,
-        "uploaded_files": uploaded_files
+        'manual_link': manual_link,
+        'uploaded_files': uploaded_files
     }
     
 def adminonly(f):
@@ -298,11 +300,14 @@ def admin_dashboard():
     cur.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT 20")
     reports = cur.fetchall()
     
-    for i, r in enumerate(reports):
-        reports[i] = dict(r)  # convert psycopg2 row to regular dict
-        reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
+    parsed_reports = []
+    for r in reports:
+        r = dict(r)  # Convert to dict
+        r['evidence_parsed'] = parse_evidence(r['evidence'])
+        parsed_reports.append(r)
+    
     cur.close()
-    return render_template("admin_dashboard.html", users=users, reports=reports)
+    return render_template("admin_dashboard.html", users=users, reports=parsed_reports)
     
 @app.route("/users")
 @adminonly
@@ -421,10 +426,11 @@ def staff_dashboard():
         cur.execute("SELECT * FROM reports WHERE assigned_staff_id=%s ORDER BY created_at DESC", (user_id,))
         reports = cur.fetchall()
         
-    for i, r in enumerate(reports):
-        reports[i] = dict(r)  # convert psycopg2 row to regular dict
-        reports[i]['evidence_parsed'] = parse_evidence(reports[i]['evidence'])
-        print("DEBUG:", reports[i]['evidence_parsed'])
+        parsed_reports = []
+        for r in reports:
+            r = dict(r)  # Convert to dict
+            r['evidence_parsed'] = parse_evidence(r['evidence'])
+            parsed_reports.append(r)
         
     cur.close()
         
@@ -432,7 +438,7 @@ def staff_dashboard():
                            staff_email=session.get("staff_email", "Unknown"),
                            staff_role=session.get("staff_role", "Staff"),
                            users=users,
-                           reports=reports)
+                           reports=parsed_reports)
     
 @app.route("/admin_logout")
 def admin_logout():
@@ -597,31 +603,7 @@ def view_report(rid):
         return redirect(url_for("home"))
         
     report = dict(row)
-    raw_evidence = report.get("evidence")
-    
-    evidence_parsed = {
-    "files": [],
-    "link": None,
-    "single": None
-    }
-    if raw_evidence:
-        try:
-            evidence_list = json.loads(raw_evidence)
-            
-            if isinstance(evidence_list, list):
-                for item in evidence_list:
-                    if isinstance(item, str) and item.startswith("http"):
-                        evidence_parsed["files"].append(item)
-                    else:
-                        evidence_parsed["files"].append(item)
-                        
-                if len(evidence_parsed["files"]) == 1:
-                    evidence_parsed["single"] = evidence_parsed["files"][0]
-            
-        except Exception:
-            pass
-            
-    report["evidence_parsed"] = evidence_parsed
+    report['evidence_parsed'] = parse_evidence(report['evidence'])
     
     cur.execute("SELECT * FROM report_notes WHERE report_id=%s ORDER BY created_at DESC", (rid,))
     notes = cur.fetchall()
