@@ -167,27 +167,26 @@ a.back-link:hover {
     <p><strong>Evidence:</strong></p>
     <h4>Evidence</h4>
 
-    {% set parsed = report.evidence_parsed if report.evidence_parsed is defined else parse_evidence(report.evidence) %}
+    {% set parsed = report.evidence_parsed if 'evidence_parsed' in report else parse_evidence(report.evidence|default('[]')) %}
 
-    <!-- Manual Provided Link -->
     {% if parsed.manual_link %}
         <p><strong>Provided Link:</strong></p>
         <p>
-            <a href="{{ parsed.manual_link }}" target="_blank" rel="noopener noreferrer">
+            <a href="{{ parsed.manual_link }}" target="_blank" rel="noopener">
                 {{ parsed.manual_link }}
             </a>
         </p>
     {% endif %}
 
-    <!-- Uploaded Files from Cloudinary -->
     {% if parsed.uploaded_files and parsed.uploaded_files|length > 0 %}
         <p><strong>Uploaded Files ({{ parsed.uploaded_files|length }}):</strong></p>
         <div class="uploaded-files-grid">
             {% for file in parsed.uploaded_files %}
-                <div class="file-item" style="margin-bottom: 15px;">
-                    <a href="{{ file.url }}" target="_blank" rel="noopener noreferrer">
-                        {% if file.filename|lower|slice(-4) in ['.png', '.jpg', 'jpeg', '.gif', 'webp'] or file.filename|lower|slice(-5) in ['.jpeg', '.webp'] %}
-                            <img src="{{ file.url }}" alt="{{ file.filename }}" style="max-width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="file-item">
+                    <a href="{{ file.url }}" target="_blank" rel="noopener">
+                        {% set ext = file.filename|lower|split('.')[-1] if '.' in file.filename else '' %}
+                        {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'] %}
+                            <img src="{{ file.url }}" alt="{{ file.filename }}" style="max-width: 350px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: block;">
                             <br><small>{{ file.filename }}</small>
                         {% else %}
                             <strong>📎 {{ file.filename }}</strong>
@@ -196,8 +195,10 @@ a.back-link:hover {
                 </div>
             {% endfor %}
         </div>
-    {% elif parsed.manual_link is none and (parsed.uploaded_files is none or parsed.uploaded_files|length == 0) %}
-        <p><em>No evidence provided.</em></p>
+    {% else %}
+        {% if not parsed.manual_link %}
+            <p><em>No evidence provided.</em></p>
+        {% endif %}
     {% endif %}
 <p><strong>Assigned to this user with ID:</strong> {{ report.assigned_staff_id if report.assigned_staff_id else "Not assigned" }}</p>
 </div>
