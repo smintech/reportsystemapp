@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Staff Dashboard</title>
 <style>
-    /* ===== VARIABLES ===== */
     :root {
         --nigeria-green: #006940;
         --nigeria-green-dark: #004d30;
@@ -27,7 +26,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-primary); }
     body { background: var(--off-white); color: var(--text-dark); overflow-x: hidden; }
 
-    /* ===== HEADER ===== */
     .dashboard-header {
         width: 100vw;
         background: var(--nigeria-green);
@@ -46,309 +44,257 @@
     }
 
     .dashboard-header h2 { font-size: 1.8rem; font-weight: 700; }
+    .btn-logout { padding: 12px 22px; background: var(--accent-gold); color: var(--white); text-decoration: none; border-radius: var(--radius); font-weight: 600; }
+    .btn-logout:hover { background: #b5931f; transform: scale(1.05); }
 
-    .btn-logout {
-        padding: 12px 22px;
-        background: var(--accent-gold);
-        color: var(--white);
-        text-decoration: none;
-        border-radius: var(--radius);
-        font-weight: 600;
-    }
-    .btn-logout:hover {
-        background: #b5931f;
-        transform: scale(1.05);
-    }
-
-    /* CONTENT */
     .dashboard-content { padding: 30px 40px; }
+    .dashboard-content h2 { margin: 30px 0 15px; color: var(--nigeria-green-dark); font-size: 1.6rem; }
 
-    .dashboard-content h2 {
-        margin-top: 20px;
-        margin-bottom: 15px;
-        color: var(--nigeria-green-dark);
-    }
-
-    /* TABLE */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-        margin-bottom: 25px;
-        min-width: 700px;
-        overflow-x: auto;
-    }
-
-    th, td {
-        padding: 12px 10px;
-        border-bottom: 1px solid var(--light-gray);
-        text-align: left;
-    }
-
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 30px; min-width: 800px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--light-gray); text-align: left; vertical-align: top; }
     th { background: var(--nigeria-green); color: var(--white); }
-    tr:nth-child(even) td { background: var(--nigeria-green-light); color: var(--white); }
-    tr:hover td { background: #00a14f; color: var(--white); }
+    tr:nth-child(even) td { background: #e8f5e9; }
+    tr:hover td { background: #c8e6c9; }
 
-    /* TABLE BUTTONS */
     .btn-table {
-        padding: 6px 12px;
-        border-radius: var(--radius);
-        border: none;
-        color: #fff;
-        font-weight: 600;
-        cursor: pointer;
-        margin: 2px 0;
+        padding: 8px 14px; border-radius: var(--radius); border: none; color: #fff; font-weight: 600;
+        cursor: pointer; margin: 4px 2px; display: inline-block; text-decoration: none; font-size: 13px;
     }
-
     .btn-view { background: #2563eb; }
     .btn-view:hover { background: #1d4ed8; }
-
     .btn-assign { background: #10b981; }
     .btn-assign:hover { background: #059669; }
-
     .btn-status { background: #f59e0b; }
-    .btn-status:hover { background: #b45309; }
-    
-    .btn-delete { background: red; }
-    .btn-delete:hover { background: red; }
+    .btn-status:hover { background: #d97706; }
+    .btn-delete { background: #dc2626; }
+    .btn-delete:hover { background: #b91c1c; }
 
-    select {
-        padding: 5px 8px;
-        border-radius: var(--radius);
-        border: 1px solid #ccc;
-        margin-right: 5px;
-    }
+    select { padding: 8px; border-radius: var(--radius); border: 1px solid #ccc; margin-right: 5px; }
 
-    form { display: inline; }
-
-    /* EVIDENCE BOX */
+    /* EVIDENCE STYLING */
     .evidence-box {
         background: var(--white);
-        padding: 20px;
-        margin: 20px 0;
+        padding: 16px;
+        margin: 12px 0;
         border-left: 5px solid var(--nigeria-green);
         border-radius: var(--radius);
         box-shadow: 0 4px 10px var(--shadow);
+        font-size: 14px;
     }
-
-    .evidence-item a {
-        color: #2563eb;
-        text-decoration: none;
+    .uploaded-files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
     }
-    .evidence-item a:hover { text-decoration: underline; }
+    .file-item img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: transform 0.2s;
+    }
+    .file-item img:hover { transform: scale(1.05); }
+    .file-item small { display: block; margin-top: 6px; color: #555; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="dashboard-header">
     <h2>Welcome, {{ staff_email }}</h2>
     <a href="{{ url_for('staff_logout') }}" class="btn-logout">Logout</a>
 </div>
 
-<!-- CONTENT -->
 <div class="dashboard-content">
-    <p>Role: {{ staff_role }}</p>
+    <p><strong>Role:</strong> {{ staff_role }}</p>
 
-{% if staff_role == 'vdmratelking' %}
-
-    <!-- USERS -->
-    <h2>All Users</h2>
-    <div style="overflow-x:auto;">
-        <table>
-            <thead><tr><th>ID</th><th>Email</th><th>Role</th><th>Created</th></tr></thead>
-            <tbody>
-                {% for u in users %}
-                <tr>
-                    <td>{{ u.id }}</td>
-                    <td>{{ u.email }}</td>
-                    <td>{{ u.role }}</td>
-                    <td>{{ u.created_at }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- REPORTS -->
-    <h2>All Reports</h2>
-    <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th><th>Anonymous Sender ID</th><th>Tracking ID</th><th>Category Selected</th><th>Options Selected</th>
-                    <th>Status</th><th>Assigned To</th><th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in reports %}
-                <tr>
-                    <td>{{ r.id }}</td>
-                    <td>{{ r.anon_id }}</td>
-                    <td>{{ r.tracking_id }}</td>
-                    <td>{{ r.category_group }}</td>
-                    <td>{{ r.options_group }}</td>
-                    <td>{{ r.status }}</td>
-                    <td>{{ r.assigned_staff_id or 'Unassigned' }}</td>
-                    <td>
-                        <div class="evidence-box">
-    {% set parsed = report.evidence_parsed if 'evidence_parsed' in report else parse_evidence(report.evidence|default('[]')) %}
-
-    {% if parsed.manual_link %}
-        <p><strong>Provided Link:</strong></p>
-        <p>
-            <a href="{{ parsed.manual_link }}" target="_blank" rel="noopener">
-                {{ parsed.manual_link }}
-            </a>
-        </p>
-    {% endif %}
-
-    {% if parsed.uploaded_files and parsed.uploaded_files|length > 0 %}
-        <p><strong>Uploaded Files ({{ parsed.uploaded_files|length }}):</strong></p>
-        <div class="uploaded-files-grid">
-            {% for file in parsed.uploaded_files %}
-                <div class="file-item">
-                    <a href="{{ file.url }}" target="_blank" rel="noopener">
-                        {% set ext = file.filename|lower|split('.')[-1] if '.' in file.filename else '' %}
-                        {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'] %}
-                            <img src="{{ file.url }}" alt="{{ file.filename }}" style="max-width: 350px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: block;">
-                            <br><small>{{ file.filename }}</small>
-                        {% else %}
-                            <strong>📎 {{ file.filename }}</strong>
-                        {% endif %}
-                    </a>
-                </div>
-            {% endfor %}
+    {% if staff_role == 'vdmratelking' %}
+        <!-- ===== SUPER USER (vdmratelking) VIEW ===== -->
+        <h2>All Users</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th>ID</th><th>Email</th><th>Role</th><th>Created At</th></tr></thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.role }}</td>
+                        <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    {% else %}
-        {% if not parsed.manual_link %}
-            <p><em>No evidence provided.</em></p>
-        {% endif %}
-    {% endif %}
-            </div>
-                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
 
-                        <form method="post" action="{{ url_for('assign_to_self_staff', rid=r.id) }}">
-                            <button class="btn-table btn-assign">Assign To Me</button>
-                        </form>
+        <h2>All Reports</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Anon ID</th><th>Tracking ID</th><th>Category</th><th>Option</th>
+                        <th>Status</th><th>Assigned</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.anon_id or '—' }}</td>
+                        <td>{{ r.tracking_id }}</td>
+                        <td>{{ r.category_group }}</td>
+                        <td>{{ r.options_group }}</td>
+                        <td><strong>{{ r.status }}</strong></td>
+                        <td>{{ r.assigned_staff_id or 'Unassigned' }}</td>
+                        <td>
+                            <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View Full</a>
 
-                        <form method="post" action="{{ url_for('assign_to_other_staff', rid=r.id) }}">
-                            <select name="user_email">
-                                {% for u in users %}
-                                {% if u.role != 'admin' %}
-                                <option value="{{ u.email }}">{{ u.email }} ({{ u.role }})</option>
+                            <form method="post" action="{{ url_for('assign_to_self_staff', rid=r.id) }}" style="display:inline;">
+                                <button class="btn-table btn-assign">Assign To Me</button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('assign_to_other_staff', rid=r.id) }}" style="display:inline;">
+                                <select name="user_email">
+                                    {% for u in users %}
+                                        {% if u.role != 'admin' %}
+                                        <option value="{{ u.email }}">{{ u.email }} ({{ u.role }})</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button class="btn-table btn-assign">Assign</button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}" style="display:inline;">
+                                <select name="status">
+                                    <option value="Pending" {{ 'selected' if r.status == 'Pending' }}>Pending</option>
+                                    <option value="In Progress" {{ 'selected' if r.status == 'In Progress' }}>In Progress</option>
+                                    <option value="Resolved" {{ 'selected' if r.status == 'Resolved' }}>Resolved</option>
+                                    <option value="Rejected" {{ 'selected' if r.status == 'Rejected' }}>Rejected</option>
+                                    <option value="Closed" {{ 'selected' if r.status == 'Closed' }}>Closed</option>
+                                </select>
+                                <button class="btn-table btn-status">Update</button>
+                            </form>
+
+                            <form action="/delete/{{ r.tracking_id }}" method="POST" style="display:inline;">
+                                <button class="btn-table btn-delete" onclick="return confirm('Permanently delete this report?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <!-- EVIDENCE ROW BELOW EACH REPORT -->
+                    {% set parsed = parse_evidence(r.evidence) %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="evidence-box">
+                                <strong>📎 Evidence</strong>
+
+                                {% if parsed.manual_link %}
+                                    <p><strong>Link Provided:</strong> <a href="{{ parsed.manual_link }}" target="_blank" rel="noopener">{{ parsed.manual_link }}</a></p>
                                 {% endif %}
-                                {% endfor %}
-                            </select>
-                            <button class="btn-table btn-assign">Assign Other</button>
-                        </form>
-                        
-                         <form action="/delete/{{ r.tracking_id }}" method="POST" style="display:inline;">
-                            <button class="btn-table btn-delete" onclick="return confirm('Delete this report?');">Delete</button>
-                        </form>
 
-                        <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
-                            <select name="status">
-                                <option value="Pending">Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Resolved">Resolved</option>
-                                <option value="Rejected">Rejected</option>
-                                <option value="Closed">Closed</option>
-                            </select>
-                            <button class="btn-table btn-status">Update</button>
-                        </form>
-                    </td>
-                </tr>
-
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-{% else %}
-
-    <!-- STAFF PERSONAL REPORTS -->
-    <h2>My Assigned Reports</h2>
-    <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr><th>ID</th><th>Anonymous Sender ID</th><th>Tracking</th><th>Category Selected</th><th>Options Selected</th>
-                    <th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-                {% for r in reports %}
-                <tr>
-                    <td>{{ r.id }}</td>
-                    <td>{{ r.anon_id }}</td>
-                    <td>{{ r.tracking_id }}</td>
-                    <td>{{ r.category_group }}</td>
-                    <td>{{ r.options_group }}</td>
-                    <td>{{ r.status }}</td>
-                    <td>
-                        <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View</a>
-
-                        <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}">
-                            <select name="status">
-                                <option value="Pending" {% if r.status=='Pending' %}selected{% endif %}>Pending</option>
-                                <option value="In Progress" {% if r.status=='In Progress' %}selected{% endif %}>In Progress</option>
-                                <option value="Resolved" {% if r.status=='Resolved' %}selected{% endif %}>Resolved</option>
-                                <option value="Rejected" {% if r.status=='Rejected' %}selected{% endif %}>Rejected</option>
-                                <option value="Closed" {% if r.status=='Closed' %}selected{% endif %}>Closed</option>
-                            </select>
-                            <button class="btn-table btn-status">Update</button>
-                        </form>
-                    </td>
-                </tr>
-
-                <!-- Staff evidence display -->
-                <tr>
-                    <td colspan="5">
-                        <div class="evidence-box">
-    <h4>Evidence</h4>
-
-    {% set parsed = report.evidence_parsed if 'evidence_parsed' in report else parse_evidence(report.evidence|default('[]')) %}
-
-    {% if parsed.manual_link %}
-        <p><strong>Provided Link:</strong></p>
-        <p>
-            <a href="{{ parsed.manual_link }}" target="_blank" rel="noopener">
-                {{ parsed.manual_link }}
-            </a>
-        </p>
-    {% endif %}
-
-    {% if parsed.uploaded_files and parsed.uploaded_files|length > 0 %}
-        <p><strong>Uploaded Files ({{ parsed.uploaded_files|length }}):</strong></p>
-        <div class="uploaded-files-grid">
-            {% for file in parsed.uploaded_files %}
-                <div class="file-item">
-                    <a href="{{ file.url }}" target="_blank" rel="noopener">
-                        {% set ext = file.filename|lower|split('.')[-1] if '.' in file.filename else '' %}
-                        {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'] %}
-                            <img src="{{ file.url }}" alt="{{ file.filename }}" style="max-width: 350px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: block;">
-                            <br><small>{{ file.filename }}</small>
-                        {% else %}
-                            <strong>📎 {{ file.filename }}</strong>
-                        {% endif %}
-                    </a>
-                </div>
-            {% endfor %}
+                                {% if parsed.uploaded_files and parsed.uploaded_files|length > 0 %}
+                                    <p><strong>Uploaded Files ({{ parsed.uploaded_files|length }}):</strong></p>
+                                    <div class="uploaded-files-grid">
+                                        {% for file in parsed.uploaded_files %}
+                                            <div class="file-item">
+                                                <a href="{{ file.url }}" target="_blank" rel="noopener">
+                                                    {% set ext = file.filename|lower|split('.')[-1] if '.' in file.filename else '' %}
+                                                    {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'] %}
+                                                        <img src="{{ file.url }}" alt="{{ file.filename }}">
+                                                        <small>{{ file.filename }}</small>
+                                                    {% else %}
+                                                        <strong>📄 {{ file.filename }}</strong>
+                                                    {% endif %}
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {% if not parsed.manual_link %}
+                                        <p><em>No evidence attached.</em></p>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
     {% else %}
-        {% if not parsed.manual_link %}
-            <p><em>No evidence provided.</em></p>
-        {% endif %}
+        <!-- ===== REGULAR STAFF VIEW ===== -->
+        <h2>My Assigned Reports</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Anon ID</th><th>Tracking ID</th><th>Category</th><th>Option</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.anon_id or '—' }}</td>
+                        <td>{{ r.tracking_id }}</td>
+                        <td>{{ r.category_group }}</td>
+                        <td>{{ r.options_group }}</td>
+                        <td><strong>{{ r.status }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('view_report', rid=r.id) }}" class="btn-table btn-view">View Full</a>
+                            <form method="post" action="{{ url_for('change_status_staff', rid=r.id) }}" style="display:inline;">
+                                <select name="status">
+                                    <option value="Pending" {{ 'selected' if r.status == 'Pending' }}>Pending</option>
+                                    <option value="In Progress" {{ 'selected' if r.status == 'In Progress' }}>In Progress</option>
+                                    <option value="Resolved" {{ 'selected' if r.status == 'Resolved' }}>Resolved</option>
+                                    <option value="Rejected" {{ 'selected' if r.status == 'Rejected' }}>Rejected</option>
+                                    <option value="Closed" {{ 'selected' if r.status == 'Closed' }}>Closed</option>
+                                </select>
+                                <button class="btn-table btn-status">Update Status</button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <!-- EVIDENCE BELOW EACH REPORT -->
+                    {% set parsed = parse_evidence(r.evidence) %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="evidence-box">
+                                <strong>📎 Evidence</strong>
+
+                                {% if parsed.manual_link %}
+                                    <p><strong>Link:</strong> <a href="{{ parsed.manual_link }}" target="_blank" rel="noopener">{{ parsed.manual_link }}</a></p>
+                                {% endif %}
+
+                                {% if parsed.uploaded_files and parsed.uploaded_files|length > 0 %}
+                                    <p><strong>Uploaded Files ({{ parsed.uploaded_files|length }}):</strong></p>
+                                    <div class="uploaded-files-grid">
+                                        {% for file in parsed.uploaded_files %}
+                                            <div class="file-item">
+                                                <a href="{{ file.url }}" target="_blank" rel="noopener">
+                                                    {% set ext = file.filename|lower|split('.')[-1] if '.' in file.filename else '' %}
+                                                    {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'] %}
+                                                        <img src="{{ file.url }}" alt="{{ file.filename }}">
+                                                        <small>{{ file.filename }}</small>
+                                                    {% else %}
+                                                        <strong>📄 {{ file.filename }}</strong>
+                                                    {% endif %}
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {% if not parsed.manual_link %}
+                                        <p><em>No evidence attached.</em></p>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% endif %}
-                        </div>
-                    </td>
-                </tr>
-
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-{% endif %}
 </div>
 
 </body>
