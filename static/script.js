@@ -104,123 +104,139 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // === Cloudinary Upload + Form Submit (The new powerful one) ===
-    document.getElementById("reportForm").addEventListener("submit", async function(e) {
+document.getElementById("reportForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         console.log("FORM SUBMIT HANDLER FIRED");
 
-        const categoryGroup = document.getElementById("category-group").value;
-        const categoryItem = document.getElementById("options-group").value;
+        // Get form values
+        const categoryGroup = document.getElementById("category-group").value.trim();
+        const categoryItem = document.getElementById("options-group").value.trim();
         const details = document.getElementById("report").value.trim();
-        const evidenceInput = document.getElementById("evidence");
-        const reporterEmail = document.getElementById("reporter_email").value.trim();
+        const manualLink = evidenceInput?.value.trim() || "";
+        const reporterEmail = reporterEmailInput?.value.trim() || "";
 
-        // Validation
+        // ===================== VALIDATION =====================
         if (!categoryGroup || !categoryItem) {
-            alert("Please select a category and option.");
+            alert("Please select a category and sub-option.");
             return;
         }
+
         if (details.length < 20) {
             alert("Details must be at least 20 characters.");
             return;
         }
-        if (evidenceInput?.value.trim()) {
+
+        if (manualLink) {
             const urlPattern = /^(https?:\/\/)[\w.-]+\.[a-z]{2,}(\/.*)?$/i;
-            if (!urlPattern.test(evidenceInput.value.trim())) {
+            if (!urlPattern.test(manualLink)) {
                 alert("Evidence link must be a valid URL starting with http:// or https://");
                 return;
             }
         }
 
+        // ===================== COLLECT EVIDENCE URLs =====================
         let evidenceUrls = [];
-        if (evidenceInput?.value.trim()) {
-            evidenceUrls.push(evidenceInput.value.trim());
+
+        // Add manual evidence link if provided
+        if (manualLink) {
+            evidenceUrls.push(manualLink);
         }
 
-        // Cloudinary upload if files selected
+        // Upload selected files directly to Cloudinary (no popup!)
         if (fileInput.files.length > 0) {
+            console.log(`Uploading ${fileInput.files.length} file(s) to Cloudinary...`);
             try {
-                await handleCloudinaryUpload(evidenceUrls);
+                const uploadedUrls = await uploadFilesDirectly(fileInput.files);
+                evidenceUrls = evidenceUrls.concat(uploadedUrls);
+                console.log("Successfully uploaded:", uploadedUrls);
             } catch (err) {
-                console.log("Upload cancelled or failed:", err);
-                return; // Don't submit if user cancelled
+                console.error("Upload failed:", err);
+                alert("Some files failed to upload. Please try again.");
+                return;
             }
         }
 
-        // Final submit
-        await submitReport(evidenceUrls);
+        // ===================== SUBMIT TO BACKEND =====================
+        await submitReport({
+            categoryGroup,
+            categoryItem,
+            details,
+            evidenceUrls,
+            reporterEmail
+        });
     });
 
-    async function handleCloudinaryUpload(evidenceUrls) {
-        return new Promise((resolve, reject) => {
-            if (!window.cloudinary) {
-                const script = document.createElement("script");
-                script.src = "https://widget.cloudinary.com/v2.0/global/all.js";
-                script.async = true;
-                script.onload = openWidget;
-                script.onerror = () => reject("Failed to load Cloudinary");
-                document.head.appendChild(script);
-            } else {
-                openWidget();
-            }
+    // ===================== DIRECT UPLOAD TO CLOUDINARY =====================
+    async function uploadFilesDirectly(files) {
+        const uploadedUrls = [];
+        const uploadPromises = [];
 
-            function openWidget() {
-                let uploaded = 0;
-                const widget = window.cloudinary.createUploadWidget({
-                    cloudName: "dowpqktts",
-                    uploadPreset: "evidence_uploads",
-                    sources: ["local", "url", "camera"],
-                    multiple: true,
-                    cropping: false
-                }, (error, result) => {
-                    if (error) {
-                        alert("Upload error. Try again.");
-                        reject(error);
-                        return;
-                    }
-                    if (result.event === "success") {
-                        evidenceUrls.push(result.info.secure_url);
-                        uploaded++;
-                    }
-                    if (result.event === "close") {
-                        if (uploaded === 0) {
-                            if (confirm("No files uploaded. Continue without images?")) {
-                                resolve();
-                            } else {
-                                reject("cancelled");
-                            }
-                        } else {
-                            resolve();
-                        }
-                    }
-                });
-                widget.open();
-            }
-        });
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", "evidence_uploads");  // Must be UNSIGNED preset
+            formData.append("cloud_name", "dowpqktts");
+
+            const promise = fetch("https://api.cloudinary.com/v1_1/dowpqktts/image/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.secure_url) {
+                    uploadedUrls.push(data.secure_url);
+                } else {
+                    throw new Error(data.error?.message || "Upload failed");
+                }
+            })
+            .catch(err => {
+                console.error(`Failed to upload ${file.name}:`, err);
+                // Don't throw — allow other files to upload
+            });
+
+            uploadPromises.push(promise);
+        }
+
+        await Promise.all(uploadPromises);
+        return uploadedUrls.filter(url => url); // Remove failed ones
     }
 
-    async function submitReport(evidenceUrls) {
+    // ===================== SUBMIT REPORT TO FLASK BACKEND =====================
+    async function submitReport({ categoryGroup, categoryItem, details, evidenceUrls, reporterEmail }) {
         const formData = new FormData();
-        formData.append("category_group", document.getElementById("category-group").value);
-        formData.append("options_group", document.getElementById("options-group").value);
-        formData.append("details", document.getElementById("report").value.trim());
+        formData.append("category_group", categoryGroup);
+        formData.append("options_group", categoryItem);
+        formData.append("details", details);
         formData.append("uploaded_urls", JSON.stringify(evidenceUrls));
-        if (reporterEmail) formData.append("reporter_email", reporterEmail);
+
+        if (reporterEmail) {
+            formData.append("reporter_email", reporterEmail);
+        }
 
         try {
-            const res = await fetch("/", {
+            const response = await fetch("/", {
                 method: "POST",
                 body: formData
             });
 
-            if (!res.ok) throw new Error("Server error");
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error: ${response.status} - ${errorText}`);
+            }
 
             alert("Report submitted successfully!");
             location.reload();
         } catch (err) {
-            alert("Submission failed. Check connection and try again.");
+            console.error("Submission failed:", err);
+            alert("Failed to submit report. Check your connection and try again.");
         }
     }
-
+});
     // Cookie helpers
     function setCookie(name, value, days) {
         const d = new Date();
