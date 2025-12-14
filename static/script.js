@@ -177,18 +177,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: formData
                 });
 
-                if (!response.ok) {
-                    const err = await response.json();
-                    console.error(`Failed: ${file.name} -`, err.error?.message);
-                    continue;
-                }
-
                 const data = await response.json();
-                if (data.secure_url) {
+
+                if (response.ok && data.secure_url) {
                     uploadedUrls.push(data.secure_url);
+                    console.log(`✓ Success: ${file.name} → ${data.secure_url}`);
+                } else {
+                    hasError = true;
+                    console.error(`✗ Failed: ${file.name}`, data.error?.message || data);
+                    alert(`Upload failed for ${file.name}: ${data.error?.message || "Unknown error"}`);
                 }
             } catch (err) {
-                console.error(`Error uploading ${file.name}:`, err);
+                hasError = true;
+                console.error(`✗ Network error for ${file.name}:`, err);
+                alert(`Network error uploading ${file.name}. Check your connection.`);
             }
         }
 
